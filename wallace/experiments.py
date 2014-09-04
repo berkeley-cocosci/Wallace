@@ -20,13 +20,11 @@ class Demo2(Experiment):
     def __init__(self, session):
         super(Demo2, self).__init__(session)
         self.task = "Demo2"
-        self.num_agents = 20
-        self.num_steps = 100
-        self.network = networks.ScaleFree(self.session, self.num_agents)
-        self.process = processes.MoranProcess(self.network)
+        self.num_agents = 10
+        self.num_steps = 9
+        self.network = networks.Chain(self.session, self.num_agents)
+        self.process = processes.RandomWalkFromSource(self.network)
 
-    def add_and_trigger_sources(self):
-        # Add a binary string source and transmit to everyone
+        # Set up the chain by creating a source
         source = agents.RandomBinaryStringSource()
-        self.network.add_global_source(source)
-        self.network.trigger_source(source)
+        self.network.add_node(source)
