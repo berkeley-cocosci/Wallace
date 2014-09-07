@@ -17,28 +17,31 @@ class RandomWalkFromSource(object):
 
     def step(self, verbose=True):
 
-        # sourced_agents = [vector.destination for source in self.network.sources
-        #                   for vector in source.outgoing_vectors]
+        latest_transmission = self.get_latest_transmission()
 
-        # replacer = np.random.choice(sourced_agents)
-
-        replacer = self.get_latest_transmission().destination
+        if latest_transmission is None:  # first step, replacer is a source
+            replacer = np.random.choice(self.network.sources)
+        else:
+            replacer = self.get_latest_transmission().destination
 
         options = replacer.outgoing_vectors
 
         if options:
-            replaced = options[np.random.randint(0, len(options))].destination
+            replaced = np.random.choice(options).destination
             replacer.transmit(replaced)
 
-            if verbose:
-                print "{}: {} replaces {}: {}".format(
-                    replacer, replacer.genome, replaced, replaced.genome)
+            # if verbose:
+            #     print "{}: {} replaces {}: {}".format(
+            #         replacer, replacer.genome, replaced, replaced.genome)
 
-            replacer = replaced
             self.db.commit()
 
         else:
             raise RuntimeError("No outgoing connections to choose from.")
+
+    # def a method that is the condition under which the next step is triggered,
+    # for example if there is an agent who has not yet received a transmission
+    # from whoever most recently received one.
 
 
 class MoranProcess(object):
