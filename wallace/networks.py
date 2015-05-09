@@ -1,9 +1,7 @@
 """Network structures commonly used in simulations of evolution."""
 
-from .models import Network, Agent, Source
-from sqlalchemy import Column, Integer, Boolean, String
-from sqlalchemy import ForeignKey
-import random
+from wallace.models import *
+from wallace.nodes import *
 
 
 class Chain(Network):
@@ -31,6 +29,9 @@ class Chain(Network):
             self.add(source)
             if len(self.nodes(type=Agent)) > 0:
                 source.connect_to(self.nodes(type=Agent)[0])
+
+    def full(self):
+        return len(self.nodes(type=Agent)) >= self.max_size
 
 
 class FullyConnected(Network):
@@ -129,6 +130,9 @@ class DiscreteGenerational(Network):
         first_index = generation*self.generation_size
         last_index = first_index+(self.generation_size)
         return self.nodes(type=Agent)[first_index:last_index]
+
+    def full(self):
+        return len(self.nodes(type=Agent)) >= self.max_size
 
 
 class ScaleFree(Network):

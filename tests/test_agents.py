@@ -1,5 +1,7 @@
-from wallace import agents, information, db, models
-from wallace.information import Meme, Gene
+from wallace.models import *
+from wallace.nodes import *
+from wallace.information import *
+from wallace import db
 from nose.tools import raises
 
 
@@ -17,15 +19,15 @@ class TestAgents(object):
         self.db.commit()
 
     def test_create_agent_generic(self):
-        agent = agents.Agent()
+        agent = Agent()
         self.add(agent)
 
         assert agent
 
     def test_create_agent_generic_transmit_to_all(self):
-        agent1 = agents.Agent()
-        agent2 = agents.Agent()
-        agent3 = agents.Agent()
+        agent1 = Agent()
+        agent2 = Agent()
+        agent3 = Agent()
 
         self.add(agent1)
         self.add(agent2)
@@ -35,10 +37,10 @@ class TestAgents(object):
         agent1.connect_to(agent2)
         agent1.connect_to(agent3)
         self.add(agent1, agent2, agent3)
-        agent1.transmit(to_whom=models.Node)
+        agent1.transmit(to_whom=Node)
 
     def test_kill_agent(self):
-        agent = agents.Agent()
+        agent = Agent()
         self.add(agent)
 
         assert agent.status == "alive"
@@ -47,7 +49,7 @@ class TestAgents(object):
         assert agent.status == "dead"
 
     def test_fail_agent(self):
-        agent = agents.Agent()
+        agent = Agent()
         self.add(agent)
 
         assert agent.status == "alive"
@@ -58,26 +60,26 @@ class TestAgents(object):
         assert agent.time_of_death is not None
 
     def test_create_replicator_agent(self):
-        agent = agents.ReplicatorAgent()
+        agent = ReplicatorAgent()
         self.add(agent)
 
         assert len(agent.infos()) is 0
 
-        info = information.Info(origin=agent, contents="foo")
+        info = Info(origin=agent, contents="foo")
         self.add(info)
         self.db.commit()
 
         assert agent.infos()[0] == info
 
     def test_agent_transmit(self):
-        agent1 = agents.ReplicatorAgent()
-        agent2 = agents.ReplicatorAgent()
+        agent1 = ReplicatorAgent()
+        agent2 = ReplicatorAgent()
         self.add(agent1)
         self.add(agent2)
         self.db.commit()
 
         agent1.connect_to(agent2)
-        info = models.Info(origin=agent1, contents="foo")
+        info = Info(origin=agent1, contents="foo")
 
         agent1.transmit(what=agent1.infos()[0], to_whom=agent2)
         agent2.receive()
@@ -85,39 +87,39 @@ class TestAgents(object):
         assert agent1.infos()[0].contents == agent2.infos()[0].contents
         assert agent1.infos()[0].uuid != agent2.infos()[0].uuid
 
-        transmission = info.transmissions[0]
+        transmission = info.transmissions()[0]
         assert transmission.info_uuid == info.uuid
         assert transmission.origin_uuid == agent1.uuid
         assert transmission.destination_uuid == agent2.uuid
 
     @raises(ValueError)
     def test_agent_transmit_no_connection(self):
-        agent1 = agents.ReplicatorAgent()
-        agent2 = agents.ReplicatorAgent()
-        info = models.Info(origin=agent1, contents="foo")
+        agent1 = ReplicatorAgent()
+        agent2 = ReplicatorAgent()
+        info = Info(origin=agent1, contents="foo")
         self.add(agent1, agent2, info)
         agent1.transmit(what=info, to_whom=agent2)
         self.db.commit()
 
     @raises(ValueError)
     def test_agent_transmit_invalid_info(self):
-        agent1 = agents.ReplicatorAgent()
-        agent2 = agents.ReplicatorAgent()
+        agent1 = ReplicatorAgent()
+        agent2 = ReplicatorAgent()
         self.add(agent1)
         self.add(agent2)
         self.db.commit()
 
         agent1.connect_to(agent2)
-        info = models.Info(origin=agent2, contents="foo")
+        info = Info(origin=agent2, contents="foo")
         self.add(agent1, agent2, info)
 
         agent1.transmit(what=info, to_whom=agent2)
         self.db.commit()
 
     def test_agent_transmit_everything_to_everyone(self):
-        agent1 = agents.ReplicatorAgent()
-        agent2 = agents.ReplicatorAgent()
-        agent3 = agents.ReplicatorAgent()
+        agent1 = ReplicatorAgent()
+        agent2 = ReplicatorAgent()
+        agent3 = ReplicatorAgent()
 
         self.add(agent1)
         self.add(agent2)
@@ -126,11 +128,11 @@ class TestAgents(object):
 
         agent1.connect_to(agent2)
         agent1.connect_to(agent3)
-        info = models.Info(origin=agent1, contents="foo")
+        info = Info(origin=agent1, contents="foo")
         self.add(agent1, agent2, agent3, info)
         self.db.commit()
 
-        agent1.transmit(what=models.Info, to_whom=agents.Agent)
+        agent1.transmit(what=Info, to_whom=Agent)
         self.db.commit()
 
         agent2.receive()
@@ -141,14 +143,14 @@ class TestAgents(object):
         assert agent1.infos()[0].contents == agent3.infos()[0].contents
         assert agent1.infos()[0].uuid != agent2.infos()[0].uuid != agent3.infos()[0].uuid
 
-        transmissions = info.transmissions
+        transmissions = info.transmissions()
         assert len(transmissions) == 2
 
     def test_transmit_selector_default(self):
 
         # Create a network of two biological agents.
-        agent1 = agents.ReplicatorAgent()
-        agent2 = agents.ReplicatorAgent()
+        agent1 = ReplicatorAgent()
+        agent2 = ReplicatorAgent()
 
         self.add(agent1)
         self.add(agent2)
@@ -160,8 +162,8 @@ class TestAgents(object):
         self.add(agent2)
         self.db.commit()
 
-        meme = information.Meme(origin=agent1, contents="foo")
-        gene = information.Gene(origin=agent1, contents="bar")
+        meme = Meme(origin=agent1, contents="foo")
+        gene = Gene(origin=agent1, contents="bar")
         self.add(meme)
         self.add(gene)
         self.db.commit()
@@ -185,8 +187,8 @@ class TestAgents(object):
     def test_transmit_selector_specific_info(self):
 
         # Create a network of two biological agents.
-        agent1 = agents.ReplicatorAgent()
-        agent2 = agents.ReplicatorAgent()
+        agent1 = ReplicatorAgent()
+        agent2 = ReplicatorAgent()
 
         self.add(agent1)
         self.add(agent2)
@@ -198,8 +200,8 @@ class TestAgents(object):
         self.add(agent2)
         self.db.commit()
 
-        meme = information.Meme(origin=agent1, contents="foo")
-        gene = information.Gene(origin=agent1, contents="bar")
+        meme = Meme(origin=agent1, contents="foo")
+        gene = Gene(origin=agent1, contents="bar")
         self.add(meme)
         self.add(gene)
         self.db.commit()
@@ -223,8 +225,8 @@ class TestAgents(object):
     def test_transmit_selector_all_of_type(self):
 
         # Create a network of two biological agents.
-        agent1 = agents.ReplicatorAgent()
-        agent2 = agents.ReplicatorAgent()
+        agent1 = ReplicatorAgent()
+        agent2 = ReplicatorAgent()
 
         self.add(agent1)
         self.add(agent2)
@@ -236,10 +238,10 @@ class TestAgents(object):
         self.add(agent2)
         self.db.commit()
 
-        meme1 = information.Meme(origin=agent1, contents="foo1")
-        meme2 = information.Meme(origin=agent1, contents="foo2")
-        meme3 = information.Meme(origin=agent1, contents="foo3")
-        gene = information.Gene(origin=agent1, contents="bar")
+        meme1 = Meme(origin=agent1, contents="foo1")
+        meme2 = Meme(origin=agent1, contents="foo2")
+        meme3 = Meme(origin=agent1, contents="foo3")
+        gene = Gene(origin=agent1, contents="bar")
         self.add(meme1, meme2, meme3)
         self.add(gene)
         self.db.commit()
@@ -250,7 +252,7 @@ class TestAgents(object):
         assert len(agent2.infos(type=Gene)) == 0
 
         # Transmit memes from agent 1 to 2.
-        agent1.transmit(what=information.Meme, to_whom=agent2)
+        agent1.transmit(what=Meme, to_whom=agent2)
 
         # Receive the transmission.
         agent2.receive()

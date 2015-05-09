@@ -1,5 +1,7 @@
-from wallace import processes, networks, sources, agents, db, models
-from wallace.models import Agent, Network
+from wallace.processes import *
+from wallace.models import *
+from wallace.nodes import *
+from wallace import db
 
 
 class TestProcesses(object):
@@ -13,11 +15,11 @@ class TestProcesses(object):
 
     def test_random_walk_from_source(self):
 
-        net = models.Network()
+        net = Network()
 
-        agent1 = agents.ReplicatorAgent()
-        agent2 = agents.ReplicatorAgent()
-        agent3 = agents.ReplicatorAgent()
+        agent1 = ReplicatorAgent()
+        agent2 = ReplicatorAgent()
+        agent3 = ReplicatorAgent()
 
         net.add(agent1)
         net.add(agent2)
@@ -30,22 +32,22 @@ class TestProcesses(object):
         agent1.connect_to(agent2)
         agent2.connect_to(agent3)
 
-        source = sources.RandomBinaryStringSource()
+        source = RandomBinaryStringSource()
         self.db.add(source)
 
         net.add(source)
         source.connect_to(net.nodes(type=Agent)[0])
         source.create_information()
 
-        processes.random_walk(net)
+        random_walk(net)
 
         agent1.receive()
         msg = agent1.infos()[0].contents
 
-        processes.random_walk(net)
+        random_walk(net)
         agent2.receive()
 
-        processes.random_walk(net)
+        random_walk(net)
         agent3.receive()
 
         assert msg == agent3.infos()[0].contents
@@ -53,11 +55,11 @@ class TestProcesses(object):
     def test_moran_process_cultural(self):
 
         # Create a fully-connected network.
-        net = models.Network()
+        net = Network()
 
-        agent1 = agents.ReplicatorAgent()
-        agent2 = agents.ReplicatorAgent()
-        agent3 = agents.ReplicatorAgent()
+        agent1 = ReplicatorAgent()
+        agent2 = ReplicatorAgent()
+        agent3 = ReplicatorAgent()
         self.db.add_all([agent1, agent2, agent3])
         net.add([agent1, agent2, agent3])
         self.db.commit()
@@ -69,8 +71,8 @@ class TestProcesses(object):
         agent3.connect_to(agent1)
         agent3.connect_to(agent2)
 
-        # Add a global source and broadcast to all the agents.
-        source = sources.RandomBinaryStringSource()
+        # Add a global source and broadcast to all the agents
+        source = RandomBinaryStringSource()
         self.db.add(source)
         net.add(source)
         for agent in net.nodes(type=Agent):
@@ -80,7 +82,7 @@ class TestProcesses(object):
 
         # Run a Moran process for 100 steps.
         for i in xrange(100):
-            processes.moran_cultural(net)
+            moran_cultural(net)
             for agent in net.nodes(type=Agent):
                 agent.receive()
 
@@ -92,12 +94,12 @@ class TestProcesses(object):
     def test_moran_process_sexual(self):
 
         # Create a fully-connected network.
-        net = networks.Network()
+        net = Network()
         self.db.add(net)
 
-        agent1 = agents.ReplicatorAgent()
-        agent2 = agents.ReplicatorAgent()
-        agent3 = agents.ReplicatorAgent()
+        agent1 = ReplicatorAgent()
+        agent2 = ReplicatorAgent()
+        agent3 = ReplicatorAgent()
         self.db.add_all([agent1, agent2, agent3])
         self.db.commit()
 
@@ -110,8 +112,8 @@ class TestProcesses(object):
         agent3.connect_to(agent1)
         agent3.connect_to(agent2)
 
-        # Add a global source and broadcast to all the agents.
-        source = sources.RandomBinaryStringSource()
+        # Add a global source and broadcast to all the agents
+        source = RandomBinaryStringSource()
         self.db.add(source)
 
         net.add(source)
@@ -126,10 +128,10 @@ class TestProcesses(object):
 
         # Run a Moran process for 100 steps.
         for i in range(100):
-            newcomer = agents.ReplicatorAgent()
+            newcomer = ReplicatorAgent()
             net.add(newcomer)
             self.db.add(newcomer)
-            processes.moran_sexual(net)
+            moran_sexual(net)
             for agent in net.nodes(type=Agent):
                 agent.receive()
 

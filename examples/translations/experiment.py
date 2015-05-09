@@ -1,4 +1,5 @@
 import wallace
+from wallace import transformations
 from wallace.experiments import Experiment
 from wallace.recruiters import SimulatedRecruiter
 from wallace.models import Transformation, Agent, Source
@@ -74,32 +75,10 @@ class SimulatedAgent(Agent):
 
     def update(self, infos):
         for info in infos:
+            self.translate(info_in=info)
 
-            # Apply the translation transformation.
-            transformation1 = TranslationTransformation(
-                info_in=info, node=self)
-            transformation1.apply()
-
-
-class WarOfTheGhostsSource(Source):
-    """A source that transmits the War of Ghosts story from Bartlett (1932).
-    """
-
-    __mapper_args__ = {"polymorphic_identity": "war_of_the_ghosts_source"}
-
-    @staticmethod
-    def _data(length):
-        with open("static/stimuli/ghosts.md", "r") as f:
-            return f.read()
-
-
-class TranslationTransformation(Transformation):
-    """Translates from English to Latin or Latin to English."""
-
-    __mapper_args__ = {"polymorphic_identity": "translation_tranformation"}
-
-    def apply(self):
-
+    def translate(self, info_in, info_out=None):
+        transformations.check_for_transformation(node=self, info_in=info_in, info_out=info_out)
         # Detect the language.
         api_key = "AIzaSyBTyfWACesHGvIPrWksUOABTg7R-I_PAW4"
         base_url = "https://www.googleapis.com/language/translate/v2"
@@ -147,9 +126,27 @@ class TranslationTransformation(Transformation):
             origin=self.node,
             contents=translation)
 
-        self.info_out = info_out
+        Translation(info_in=info_in, info_out=info_out)
 
         return info_out
+
+
+class WarOfTheGhostsSource(Source):
+    """A source that transmits the War of Ghosts story from Bartlett (1932).
+    """
+
+    __mapper_args__ = {"polymorphic_identity": "war_of_the_ghosts_source"}
+
+    @staticmethod
+    def _data(length):
+        with open("static/stimuli/ghosts.md", "r") as f:
+            return f.read()
+
+
+class Translation(Transformation):
+    """Translates from English to Latin or Latin to English."""
+
+    __mapper_args__ = {"polymorphic_identity": "translation_tranformation"}
 
 
 if __name__ == "__main__":
