@@ -3,7 +3,7 @@
 from wallace.networks import Chain
 from wallace.models import Info, Source
 from wallace import processes
-from wallace.agents import ReplicatorAgent
+from wallace.nodes import ReplicatorAgent
 from wallace.experiments import Experiment
 import random
 

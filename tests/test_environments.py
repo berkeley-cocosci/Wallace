@@ -1,4 +1,7 @@
-from wallace import agents, db, environments, information
+from wallace import db
+from wallace.models import *
+from wallace.nodes import *
+from wallace.information import *
 
 
 class TestEnvironments(object):
@@ -16,8 +19,8 @@ class TestEnvironments(object):
 
     def test_create_environment(self):
         """Create an environment"""
-        environment = environments.Environment()
-        state = information.State(origin=environment, contents="foo")
+        environment = Environment()
+        state = State(origin=environment, contents="foo")
         self.add(environment, state)
 
         assert len(environment.uuid) == 32
@@ -26,11 +29,11 @@ class TestEnvironments(object):
         assert environment.state().contents == "foo"
 
     def test_create_environment_get_observed(self):
-        environment = environments.Environment()
-        state = information.State(origin=environment, contents="foo")
+        environment = Environment()
+        state = State(origin=environment, contents="foo")
         self.add(environment, state)
 
-        agent = agents.ReplicatorAgent()
+        agent = ReplicatorAgent()
         self.add(agent)
 
         environment.connect_to(agent)

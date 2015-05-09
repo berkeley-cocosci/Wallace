@@ -1,5 +1,5 @@
 import wallace
-from wallace.agents import ReplicatorAgent
+from wallace.nodes import ReplicatorAgent
 from wallace.models import Source, Agent
 from wallace.networks import Chain
 from wallace import processes

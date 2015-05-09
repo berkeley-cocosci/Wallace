@@ -15,26 +15,16 @@ class TestTransformations(object):
         self.db.add_all(args)
         self.db.commit()
 
-    def test_identity_transformation(self):
+    def test_replication(self):
         node = models.Node()
         self.db.add(node)
         self.db.commit()
 
         info_in = models.Info(origin=node, contents="foo")
-        self.db.add(info_in)
-        self.db.commit()
 
-        # Create a new info based on the old one.
-        info_out = models.Info(origin=node, contents=info_in.contents)
+        info_out = transformations.replicate(node=node, info_in=info_in, info_out=None)
 
-        # Register the transformation.
-        transformation = transformations.Replication(
-            info_out=info_out,
-            info_in=info_in,
-            node=node)
-
-        self.db.add(transformation)
-        self.db.commit()
+        info_out = node.infos()[-1]
 
         assert info_out.contents == "foo"
 
@@ -47,19 +37,6 @@ class TestTransformations(object):
         self.db.add(info_in)
         self.db.commit()
 
-        # Create a new info based on the old one.
-        shuffled_string = ''.join(
-            random.sample(info_in.contents, len(info_in.contents)))
-
-        info_out = models.Info(origin=node, contents=shuffled_string)
-
-        # Register the transformation.
-        transformation = transformations.Transformation(
-            info_out=info_out,
-            info_in=info_in,
-            node=node)
-
-        self.db.add(transformation)
-        self.db.commit()
+        info_out = transformations.shuffle(info_in=info_in, node=node)
 
         assert info_out.contents in ["foo", "ofo", "oof"]

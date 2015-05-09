@@ -1,6 +1,6 @@
 """Subclasses of information."""
 
-from .models import Info
+from wallace.models import *
 
 
 class Gene(Info):
