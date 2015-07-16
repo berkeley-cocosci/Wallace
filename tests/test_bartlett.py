@@ -47,8 +47,8 @@ class TestBartlett(object):
             if working is True:
                 agent_uuid = agent.json()['agents']['uuid']
                 args = {'destination_uuid': agent_uuid}
-                transmission = requests.get(url + '/transmissions', data=args)
-                requests.get(url + '/information/' + str(transmission.json()['transmissions'][0]['info_uuid']), data=args)
+                transmission = requests.get(url + '/transmissions', params=args)
+                requests.get(url + '/information/' + str(transmission.json()['transmissions'][0]['info_uuid']), params=args)
                 args = {'origin_uuid': agent_uuid, 'contents': 'test test test', 'info_type': 'base'}
                 requests.post(url + '/information', data=args)
 
