@@ -89,6 +89,14 @@ var FunctionLearningExperiment = function() {
                 xTestNew = randomSubset(allX.diff(xTrain), N/4);
                 xTest = shuffle(xTestFromTraining.concat(xTestNew));
                 yTest = [];
+
+                psiTurk.showPage('stage.html');
+                Mousetrap.bind("space", proceedToNextTrial, "keydown");
+                drawUserInterface();
+                document.addEventListener('click', mousedownEventListener);
+                stimulusXSize = xTrain[trialIndex] * PPU;
+                stimulusX.attr({ width: stimulusXSize });
+
 		    },
 		    error: function (err) {
 		    	console.log(err);
@@ -248,14 +256,6 @@ var FunctionLearningExperiment = function() {
     stimulusYSize = 0;
 	enteredResponse = false;
     createAgent();
-	psiTurk.showPage('stage.html');
-    drawUserInterface();
-    Mousetrap.bind("space", proceedToNextTrial, "keydown");
-    window.setTimeout(function () {
-        document.addEventListener('click', mousedownEventListener);
-        stimulusXSize = xTrain[trialIndex] * PPU;
-        stimulusX.attr({ width: stimulusXSize });
-    }, 500);
 };
 
 //
