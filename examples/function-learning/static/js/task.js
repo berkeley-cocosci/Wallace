@@ -79,8 +79,6 @@ var FunctionLearningExperiment = function() {
                 xTrain = data.x;
                 yTrain = data.y;
 
-                N = xTrain.length * 2;
-                $("#total-trials").html(N);
                 yTrainReported = [];
 
                 // Set testing variables.
@@ -97,6 +95,8 @@ var FunctionLearningExperiment = function() {
                 stimulusXSize = xTrain[trialIndex] * PPU;
                 stimulusX.attr({ width: stimulusXSize });
 
+                N = xTrain.length * 2;
+                $("#total-trials").html(N);
 		    },
 		    error: function (err) {
 		    	console.log(err);
