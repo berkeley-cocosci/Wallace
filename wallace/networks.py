@@ -265,9 +265,10 @@ class SequentialMicrosociety(Network):
 
     __mapper_args__ = {"polymorphic_identity": "microsociety"}
 
-    def __init__(self, n):
+    def __init__(self, n, max_size):
         """Store n in property1."""
         self.property1 = repr(n)
+        self.max_size = max_size
 
     @property
     def n(self):

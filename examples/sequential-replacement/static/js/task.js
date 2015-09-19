@@ -30,6 +30,7 @@ var FunctionLearningExperiment = function() {
 	PPU = 3;      // Pixels per base unit.
 	xMax = 100;   // Maximum size of a bar in base units.
 
+    all_data = []
 
 	// Create the agent.
 	createAgent = function() {
@@ -39,9 +40,9 @@ var FunctionLearningExperiment = function() {
             data: { unique_id: uniqueId },
 		    type: 'json',
 		  	success: function (resp) {
-		  		agent_id = resp.agents.id;
+		  		agent_uuid = resp.agents.uuid;
                 setTimeout(function() {
-                    getPendingTransmissions(agent_id);
+                    getPendingTransmissions(agent_uuid);
                 }, 1000);		    },
 		    error: function (err) {
                 currentview = new Questionnaire();
@@ -49,14 +50,18 @@ var FunctionLearningExperiment = function() {
 		});
 	};
 
-	getPendingTransmissions = function(destination_id) {
+	getPendingTransmissions = function(destination_uuid) {
 		reqwest({
-		    url: "/transmissions?destination_id=" + destination_id,
+		    url: "/transmissions?destination_uuid=" + destination_uuid,
 		    method: 'get',
 		    type: 'json',
 		  	success: function (resp) {
-		  		info_id = resp.transmissions[0].info_id;
-		     	info = getInfo(info_id);
+                console.log(resp);
+                infos = []
+                for (var i = resp.transmissions.length - 1; i >= 0; i--) {
+                    info_uuid = resp.transmissions[i].info_uuid
+                    getInfo(info_uuid);
+                };
 		    },
 		    error: function (err) {
 		    	console.log(err);
@@ -64,39 +69,32 @@ var FunctionLearningExperiment = function() {
 		});
 	};
 
-	getInfo = function(id) {
+	getInfo = function(uuid) {
 		reqwest({
-		    url: "/information/" + id,
+		    url: "/information/" + uuid,
 		    method: 'get',
 		    type: 'json',
 		  	success: function (resp) {
-
-                r = resp.contents;
-
-		     	data = JSON.parse(resp.contents);
+                data = JSON.parse(resp.contents)
 
                 // Set training variables.
                 xTrain = data.x;
                 yTrain = data.y;
 
+                N = xTrain.length * 2;
+                $("#total-trials").html(N);
                 yTrainReported = [];
 
                 // Set testing variables.
                 allX = range(1, xMax);
-                xTestFromTraining = randomSubset(xTrain, N/4);
-                xTestNew = randomSubset(allX.diff(xTrain), N/4);
-                xTest = shuffle(xTestFromTraining.concat(xTestNew));
+                xTest = xTrain;
                 yTest = [];
 
-                psiTurk.showPage('stage.html');
-                Mousetrap.bind("space", proceedToNextTrial, "keydown");
-                drawUserInterface();
-                document.addEventListener('click', mousedownEventListener);
+		     	all_data.push([xTrain, yTrain]);
+                drawUserInterface(data);
+
                 stimulusXSize = xTrain[trialIndex] * PPU;
                 stimulusX.attr({ width: stimulusXSize });
-
-                N = xTrain.length * 2;
-                $("#total-trials").html(N);
 		    },
 		    error: function (err) {
 		    	console.log(err);
@@ -107,7 +105,7 @@ var FunctionLearningExperiment = function() {
 	//
 	// Draw the user interface.
 	//
-    drawUserInterface = function () {
+    drawUserInterface = function (data) {
 
         paper = Raphael(0, 50, 600, 400);
 
@@ -137,59 +135,62 @@ var FunctionLearningExperiment = function() {
         stimulusY.attr("stroke", "none");
         // stimulusY.hide();
 
-        // Draw the feedback bar.
-        feedback = paper.rect(500, 400, 25, 0);
-        feedback.attr("fill", "#CCCCCC");
-        feedback.attr("stroke", "none");
-        feedback.hide();
+        // Draw the feedback bars.
+        feedbacks = [];
+        for (var i = all_data.length - 1; i >= 0; i--) {
+            feedback = paper.rect(500+(30*i), 400, 25, 0);
+            feedback.attr("fill", "#CCCCCC");
+            feedback.attr("stroke", "none");
+            feedback.hide();
+            feedbacks.push(feedback);
+            console.log(i);
+        }
+
     };
 
     proceedToNextTrial = function () {
 
-        if (readyToProceedToNextTrial) {
+        // Increment the trial counter.
+        console.log("Trial " + (1 + trialIndex) + " completed.");
+        trialIndex = trialIndex + 1;
+        $("#trial-number").html(trialIndex);
 
-            // Increment the trial counter.
-            console.log("Trial " + (1 + trialIndex) + " completed.");
-            trialIndex = trialIndex + 1;
-            $("#trial-number").html(trialIndex);
+        // Set up the stimuli.
+        if (trialIndex < N/2)
+            stimulusXSize = xTrain[trialIndex] * PPU;
+        else
+            stimulusXSize = xTest[trialIndex - N/2] * PPU;
+        stimulusX.attr({ width: stimulusXSize });
+        stimulusX.show();
+        stimulusY.show();
 
-            // Set up the stimuli.
-            if (trialIndex < N/2)
-                stimulusXSize = xTrain[trialIndex] * PPU;
-            else
-                stimulusXSize = xTest[trialIndex - N/2] * PPU;
-            stimulusX.attr({ width: stimulusXSize });
-            stimulusX.show();
-            stimulusY.show();
+        // Prevent repeat keypresses.
+        Mousetrap.pause();
 
-            // Prevent repeat keypresses.
+        // Wait for a new response.
+        enteredResponse = false;
+
+        // If this was the last trial, finish up.
+        if (trialIndex == N) {
+            document.removeEventListener('click', mousedownEventListener);
             Mousetrap.pause();
+            paper.remove();
 
-            // Wait for a new response.
-            enteredResponse = false;
+            // Send data back to the server.
+            response = encodeURIComponent(JSON.stringify({"x": xTest, "y": yTest}));
 
-            // If this was the last trial, finish up.
-            if (trialIndex == N) {
-                document.removeEventListener('click', mousedownEventListener);
-                Mousetrap.pause();
-                paper.remove();
+            reqwest({
+                url: "/information",
+                method: 'post',
+                data: {
+                    origin_uuid: agent_uuid,
+                    contents: response,
+                    info_type: "base"
+                }
+            });
 
-                // Send data back to the server.
-                response = encodeURIComponent(JSON.stringify({"x": xTest, "y": yTest}));
-
-                reqwest({
-                    url: "/information",
-                    method: 'post',
-                    data: {
-                        origin_id: agent_id,
-                        contents: response,
-                        info_type: "base"
-                    }
-                });
-
-                // Show the questionnaire.
-                currentview = new Questionnaire();
-            }
+            // Show the questionnaire.
+            currentview = new Questionnaire();
         }
     };
 
@@ -203,28 +204,25 @@ var FunctionLearningExperiment = function() {
         // Training phase
         if (trialIndex < N/2) {
 
-            yTrue = yTrain[trialIndex];
-
             if (!enteredResponse) {
                 yTrainReported.push(yNow);
                 enteredResponse = true;
-                feedback.attr({ y: 400 - yTrue * PPU, height: yTrue * PPU });
-                feedback.show();
+
+                for (var i = feedbacks.length - 1; i >= 0; i--) {
+                    yTrue = all_data[i][1][trialIndex];
+                    feedbacks[i].attr({ y: 400 - yTrue * PPU, height: yTrue * PPU });
+                    feedbacks[i].show();
+                };
             } else {
                 // Move on to next trial iff response is correct.
-                if(Math.abs(yNow - yTrue) < 5) {
-                    console.log("Successful correction.");
-                    readyToProceedToNextTrial = true;
-                    feedback.hide();
-                    stimulusX.hide();
-                    stimulusY.hide();
-                    Mousetrap.resume();
-                } else {  // Show animation for failed correction.
-                    feedback.animate({fill: "#666"}, 100, "<", function () {
-                        this.animate({fill: "#CCC"}, 100, ">");
-                    });
-                    console.log("Failure to correct.");
-                }
+                console.log("Successful correction.");
+                readyToProceedToNextTrial = true;
+                for (var i = feedbacks.length - 1; i >= 0; i--) {
+                    feedbacks[i].hide();
+                };
+                stimulusX.hide();
+                stimulusY.hide();
+                Mousetrap.resume();
             }
 
         // Testing phase
@@ -232,7 +230,9 @@ var FunctionLearningExperiment = function() {
             $("#training-or-testing").html("Testing");
             yTest.push(yNow);
             readyToProceedToNextTrial = true;
-            feedback.hide();
+            for (var i = feedbacks.length - 1; i >= 0; i--) {
+                feedbacks[i].hide();
+            };
             stimulusX.hide();
             stimulusY.hide();
             Mousetrap.resume();
@@ -256,6 +256,10 @@ var FunctionLearningExperiment = function() {
     stimulusYSize = 0;
 	enteredResponse = false;
     createAgent();
+	psiTurk.showPage('stage.html');
+    // drawUserInterface();
+    Mousetrap.bind("space", proceedToNextTrial, "keydown");
+    document.addEventListener('click', mousedownEventListener);
 };
 
 //

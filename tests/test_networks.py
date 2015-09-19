@@ -352,7 +352,7 @@ class TestNetworks(object):
 
     def test_create_sequential_microsociety(self):
         """Create a sequential microsociety."""
-        net = networks.SequentialMicrosociety(n=3)
+        net = networks.SequentialMicrosociety(n=3, max_size=10)
         self.db.add(net)
 
         source = nodes.RandomBinaryStringSource(network=net)
