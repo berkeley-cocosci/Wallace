@@ -8,7 +8,7 @@ from builtins import object
 import os
 from psiturk.psiturk_config import PsiturkConfig
 from psiturk.models import Participant
-from boto.mturk.connection import MTurkConnection
+from boto3.mturk.connection import MTurkConnection
 
 
 class Recruiter(object):
