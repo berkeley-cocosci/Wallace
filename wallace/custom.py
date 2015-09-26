@@ -1,5 +1,7 @@
 """Import custom routes into the experiment server."""
 
+from __future__ import print_function
+
 from flask import Blueprint, request, Response, send_from_directory, \
     jsonify, render_template
 
@@ -46,7 +48,7 @@ try:
     mod = __import__('wallace_experiment', fromlist=[this_experiment])
     experiment = getattr(mod, this_experiment)
 except ImportError:
-    print "Error: Could not import experiment."
+    print("Error: Could not import experiment.")
 
 
 @custom_code.route('/robots.txt')

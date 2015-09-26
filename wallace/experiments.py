@@ -1,5 +1,8 @@
 """The base experiment class."""
 
+from __future__ import print_function
+from __future__ import absolute_import
+
 from wallace.models import Network, Node
 from sqlalchemy import and_
 import random
@@ -13,7 +16,7 @@ class Experiment(object):
 
     def log(self, text, key="?????"):
         if self.verbose:
-            print ">>>> {} {}".format(key[0:5], text)
+            print(">>>> {} {}".format(key[0:5], text))
             sys.stdout.flush()
 
     def log_summary(self):

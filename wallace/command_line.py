@@ -3,6 +3,8 @@
 
 """The Wallace command-line utility."""
 
+from __future__ import print_function
+
 import click
 import time
 import uuid
@@ -50,7 +52,7 @@ def ensure_heroku_logged_in():
     """Ensure that the user is logged in to Heroku."""
     p = pexpect.spawn("heroku auth:whoami")
     p.interact()
-    print ""
+    print("")
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
@@ -73,7 +75,7 @@ def setup(debug=True, verbose=False):
     # Verify that the Postgres server is running.
     try:
         psycopg2.connect(database="x", user="postgres", password="nada")
-    except psycopg2.OperationalError, e:
+    except psycopg2.OperationalError as e:
         if "could not connect to server" in str(e):
             raise RuntimeError("The Postgres server isn't running.")
 
@@ -105,7 +107,7 @@ def setup(debug=True, verbose=False):
     )
     shutil.copytree(os.getcwd(), dst, ignore=to_ignore)
 
-    print dst
+    print(dst)
 
     # Save the experiment id
     with open(os.path.join(dst, "experiment_id.txt"), "w") as file:
@@ -152,13 +154,13 @@ def summary(app):
     """Print a summary of a deployed app's status."""
     r = requests.get('https://{}.herokuapp.com/summary'.format(app))
     summary = r.json()['summary']
-    print "\nstatus \t| count"
-    print "----------------"
+    print("\nstatus \t| count")
+    print("----------------")
     for s in summary:
-        print "{}\t| {}".format(s[0], s[1])
+        print("{}\t| {}".format(s[0], s[1]))
     num_101s = sum([s[1] for s in summary if s[0] == 101])
     num_10Xs = sum([s[1] for s in summary if s[0] >= 100])
-    print "\nYield: {:.2%}".format(1.0*num_101s / num_10Xs)
+    print("\nYield: {:.2%}".format(1.0*num_101s / num_10Xs))
 
 
 @wallace.command()
@@ -238,7 +240,7 @@ def debug(verbose):
         p.interact()
 
     except Exception:
-        print "\nCouldn't open the psiTurk shell. Internet connection okay?"
+        print("\nCouldn't open the psiTurk shell. Internet connection okay?")
 
     log("Completed debugging of experiment " + id + ".")
     os.chdir(cwd)
@@ -359,7 +361,7 @@ def deploy_sandbox_shared_setup(verbose=True, web_procs=1):
                                   "sed -n 's|.*URL:||p'", shell=True)
 
     log("URLs:")
-    print url
+    print(url)
 
     # Return to the branch whence we came.
     os.chdir(cwd)
@@ -506,9 +508,9 @@ def create(example):
         shutil.copytree(example_dir, os.path.join(os.getcwd(), example))
         log("Example created.", delay=0)
     except TypeError:
-        print "Example '{}' does not exist.".format(example)
+        print("Example '{}' does not exist.".format(example))
     except OSError:
-        print "Example '{}' already exists here.".format(example)
+        print("Example '{}' already exists here.".format(example))
 
 
 @wallace.command()

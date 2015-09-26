@@ -1,5 +1,7 @@
 """Recruiters manage the flow of participants to the experiment."""
 
+from __future__ import print_function
+
 import os
 from psiturk.psiturk_config import PsiturkConfig
 from psiturk.models import Participant
@@ -31,13 +33,13 @@ class HotAirRecruiter(object):
         super(HotAirRecruiter, self).__init__()
 
     def open_recruitment(self):
-        print "Opening recruitment."
+        print("Opening recruitment.")
 
     def recruit_participants(self, n=1):
-        print "Recruiting a new participant."
+        print("Recruiting a new participant.")
 
     def close_recruitment(self):
-        print "Close recruitment."
+        print("Close recruitment.")
 
 
 class SimulatedRecruiter(object):
@@ -138,7 +140,7 @@ class PsiTurkRecruiter(Recruiter):
 
         else:
             # HIT was already created, no need to recreate it.
-            print "Reject recruitment reopening: experiment has started."
+            print("Reject recruitment reopening: experiment has started.")
 
     def recruit_participants(self, n=1):
         """Extend the HIT to recruit more people."""
@@ -146,12 +148,12 @@ class PsiTurkRecruiter(Recruiter):
 
         if auto_recruit:
 
-            print "Starting Wallace's recruit_participants."
+            print("Starting Wallace's recruit_participants.")
 
             hit_id = str(
                 Participant.query.with_entities(Participant.hitid).first().hitid)
 
-            print "hit_id is {}.".format(hit_id)
+            print("hit_id is {}.".format(hit_id))
 
             is_sandbox = self.config.getboolean(
                 'Shell Parameters', 'launch_in_sandbox_mode')
@@ -178,7 +180,7 @@ class PsiTurkRecruiter(Recruiter):
                 hit_id,
                 expiration_increment=int(float(expiration_increment or 0)*3600))
         else:
-            print (">>>> auto_recruit set to {}: recruitment suppressed"
+            print(">>>> auto_recruit set to {}: recruitment suppressed"
                    .format(auto_recruit))
 
     def approve_hit(self, assignment_id):

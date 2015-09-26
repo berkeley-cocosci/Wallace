@@ -1,6 +1,8 @@
 """Processes manipulate networks and their parts."""
 
-from nodes import Agent, Source
+from __future__ import absolute_import
+
+from .nodes import Agent, Source
 import random
 
 

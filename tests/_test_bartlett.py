@@ -16,7 +16,7 @@
 
 #     args = {'hitId': 'bartlett-test-hit', 'assignmentId': 1, 'workerId': 1, 'mode': 'sandbox'}
 #     participant = requests.get(exp_address + '/exp', params=args)
-#     #print participant.text
+#     #print(participant.text)
 
 #     args = {'Event.1.EventType': 'AssignmentAccepted', 'Event.1.AssignmentId': 1}
 #     notification = requests.post(exp_address + '/notifications', data=args)

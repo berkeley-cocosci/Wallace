@@ -98,7 +98,7 @@ class TranslationTransformation(Transformation):
             "key": api_key,
             "q": self.info_in.contents}
         r = requests.get(base_url + "/detect", params=payload)
-        print r.text
+        print(r.text)
         r_dict = json.loads(r.text)
         source = str(r_dict["data"]["detections"][0][0]["language"])
 
@@ -115,7 +115,7 @@ class TranslationTransformation(Transformation):
             "target": destination}
         r = requests.get(base_url, params=payload)
         r_dict = json.loads(r.text)
-        print r_dict
+        print(r_dict)
         translation = r_dict[
             "data"]["translations"][0]["translatedText"].encode("utf-8")
 

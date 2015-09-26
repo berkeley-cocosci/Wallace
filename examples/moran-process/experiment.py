@@ -25,7 +25,7 @@ class SubstitutionCiphersExperiment(Experiment):
             self.save(source)
             source.connect(direction="to", whom=self.network.nodes(type=Agent))
             self.save()
-            print "Added initial source: " + str(source)
+            print("Added initial source: " + str(source))
 
         # Open recruitment
         self.recruiter().open_recruitment(exp=self)

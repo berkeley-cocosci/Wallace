@@ -35,7 +35,8 @@ class Chain(Network):
     def add_source(self, source):
         """Add the source to the beginning of the chain."""
         if len(self.nodes(type=Source)) > 1:
-            raise(Exception("Chain network already has a source"))
+
+            raise Exception("Chain network already has a source")
 
         else:
             if len(self.nodes(type=Agent)) > 0:

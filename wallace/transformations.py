@@ -6,8 +6,9 @@ file stores a list of all the subclasses of Transformation made available by
 default. Note that they don't necessarily tell you anything about the nature
 in which two Info's relate to each other, but if used sensibly they will do so.
 """
+from __future__ import absolute_import
 
-from models import Transformation
+from .models import Transformation
 
 
 class Replication(Transformation):

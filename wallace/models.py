@@ -1,5 +1,8 @@
 """Define Wallace's core models."""
 
+from __future__ import print_function
+from __future__ import absolute_import
+
 from datetime import datetime
 
 from .db import Base
@@ -93,7 +96,7 @@ class Network(Base):
             type = Node
 
         if not issubclass(type, Node):
-            raise(TypeError("{} is not a valid node type.".format(type)))
+            raise TypeError("{} is not a valid node type.".format(type))
 
         if failed not in ["all", False, True]:
             raise ValueError("{} is not a valid node failed".format(failed))
@@ -126,7 +129,7 @@ class Network(Base):
             type = Node
 
         if not issubclass(type, Node):
-            raise(TypeError("{} is not a valid node type.".format(type)))
+            raise TypeError("{} is not a valid node type.".format(type))
 
         if failed not in ["all", False, True]:
             raise ValueError("{} is not a valid node failed".format(failed))
@@ -177,8 +180,8 @@ class Network(Base):
         transmissions() method in class Vector.
         """
         if status not in ["all", "pending", "received"]:
-            raise(ValueError("You cannot get transmission of status {}.".format(status) +
-                  "Status can only be pending, received or all"))
+            raise ValueError("You cannot get transmission of status {}.".format(status) +
+                  "Status can only be pending, received or all")
         if vector_failed not in ["all", False, True]:
             raise ValueError("{} is not a valid vector failed".format(vector_failed))
 
@@ -285,8 +288,8 @@ class Network(Base):
             base.network = self
             self.calculate_full()
         else:
-            raise(TypeError("Cannot add {} to the network as it is a {}. " +
-                            "Only Nodes can be added to networks.").format(base, type(base)))
+            raise TypeError("Cannot add {} to the network as it is a {}. " +
+                            "Only Nodes can be added to networks.").format(base, type(base))
 
     def calculate_full(self):
         """Set whether the network is full."""
@@ -294,25 +297,25 @@ class Network(Base):
 
     def print_verbose(self):
         """Print a verbose representation of a network."""
-        print "Nodes: "
+        print("Nodes: ")
         for a in (self.nodes(failed="all")):
-            print a
+            print(a)
 
-        print "\nVectors: "
+        print("\nVectors: ")
         for v in (self.vectors(failed="all")):
-            print v
+            print(v)
 
-        print "\nInfos: "
+        print("\nInfos: ")
         for i in (self.infos(origin_failed="all")):
-            print i
+            print(i)
 
-        print "\nTransmissions: "
+        print("\nTransmissions: ")
         for t in (self.transmissions(vector_failed="all")):
-            print t
+            print(t)
 
-        print "\nTransformations: "
+        print("\nTransformations: ")
         for t in (self.transformations(node_failed="all")):
-            print t
+            print(t)
 
 
 class Node(Base):
@@ -543,7 +546,7 @@ class Node(Base):
             type = Info
 
         if not issubclass(type, Info):
-            raise(TypeError("Cannot get-info of type {} as it is not a valid type.".format(type)))
+            raise TypeError("Cannot get-info of type {} as it is not a valid type.".format(type))
 
         return type\
             .query\
@@ -558,12 +561,12 @@ class Node(Base):
         Status can be "all" (default), "pending", or "received".
         """
         if direction not in ["incoming", "outgoing", "all"]:
-            raise(ValueError("You cannot get transmissions of direction {}.".format(direction) +
-                  "Type can only be incoming, outgoing or all."))
+            raise ValueError("You cannot get transmissions of direction {}.".format(direction) +
+                             "Type can only be incoming, outgoing or all.")
 
         if status not in ["all", "pending", "received"]:
-            raise(ValueError("You cannot get transmission of status {}.".format(status) +
-                  "Status can only be pending, received or all"))
+            raise ValueError("You cannot get transmission of status {}.".format(status) +
+                             "Status can only be pending, received or all")
 
         if direction == "all":
             if status == "all":
@@ -666,8 +669,8 @@ class Node(Base):
 
         for node in whom:
             if not isinstance(node, Node):
-                raise(TypeError("connect cannot parse a list containing objects of type {}.".
-                                format([type(node) for node in whom if not isinstance(node, Node)][0])))
+                raise TypeError("connect cannot parse a list containing objects of type {}.".
+                                format([type(node) for node in whom if not isinstance(node, Node)][0]))
             if node.failed:
                 raise ValueError("Cannot connect to/from {} as it has failed".format(node))
 
@@ -703,7 +706,7 @@ class Node(Base):
 
         for node in to_nodes:
             if isinstance(node, Source):
-                raise(TypeError("{} cannot connect to {} as it is a Source.".format(self, node)))
+                raise TypeError("{} cannot connect to {} as it is a Source.".format(self, node))
             Vector(origin=self, destination=node)
 
         for node in from_nodes:
@@ -817,7 +820,7 @@ class Node(Base):
                 what.receive_time = timenow()
                 received_transmissions.append(what)
             else:
-                raise(ValueError("{} cannot receive {} as it is not in its pending_transmissions".format(self, what)))
+                raise ValueError("{} cannot receive {} as it is not in its pending_transmissions".format(self, what))
         else:
             raise ValueError("Nodes cannot receive {}".format(what))
 
@@ -831,12 +834,12 @@ class Node(Base):
         pass
 
     def replicate(self, info_in):
-        from transformations import Replication
+        from .transformations import Replication
         info_out = type(info_in)(origin=self, contents=info_in.contents)
         Replication(info_in=info_in, info_out=info_out)
 
     def mutate(self, info_in):
-        from transformations import Mutation
+        from .transformations import Mutation
         info_out = type(info_in)(origin=self, contents=info_in._mutated_contents())
         Mutation(info_in=info_in, info_out=info_out)
 
@@ -913,8 +916,8 @@ class Vector(Base):
         """
 
         if status not in ["all", "pending", "received"]:
-            raise(ValueError("You cannot get {} transmissions.".format(status) +
-                  "Status can only be pending, received or all"))
+            raise ValueError("You cannot get {} transmissions.".format(status) +
+                  "Status can only be pending, received or all")
 
         if status == "all":
             return Transmission\
@@ -997,8 +1000,8 @@ class Info(Base):
 
     def transmissions(self, status="all"):
         if status not in ["all", "pending", "received"]:
-            raise(ValueError("You cannot get transmission of status {}.".format(status) +
-                             "Status can only be pending, received or all"))
+            raise ValueError("You cannot get transmission of status {}.".format(status) +
+                             "Status can only be pending, received or all")
         if status == "all":
             return Transmission\
                 .query\
@@ -1012,8 +1015,8 @@ class Info(Base):
 
     def transformations(self, relationship="all"):
         if relationship not in ["all", "parent", "child"]:
-            raise(ValueError("You cannot get transformations of relationship {}".format(relationship) +
-                  "Relationship can only be parent, child or all."))
+            raise ValueError("You cannot get transformations of relationship {}".format(relationship) +
+                  "Relationship can only be parent, child or all.")
 
         if relationship == "all":
             return Transformation\
