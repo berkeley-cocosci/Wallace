@@ -1,5 +1,7 @@
 """Tests for creating and manipulating agents."""
 
+from builtins import object
+
 from wallace import nodes, information, db, models
 from wallace.information import Meme, Gene
 from nose.tools import raises

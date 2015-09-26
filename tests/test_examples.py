@@ -1,5 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+"""Test examples."""
+
+from builtins import object
+
 import os
 import subprocess
 

@@ -2,6 +2,9 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
+from builtins import str
+from builtins import range
+from builtins import object
 
 from wallace.models import Network, Node
 from sqlalchemy import and_
@@ -24,7 +27,7 @@ class Experiment(object):
         from psiturk.models import Participant
         participants = Participant.query.with_entities(Participant.status).all()
         counts = Counter([p.status for p in participants])
-        sorted_counts = sorted(counts.items(), key=itemgetter(0))
+        sorted_counts = sorted(list(counts.items()), key=itemgetter(0))
         self.log("Status summary: {}".format(str(sorted_counts)))
         return sorted_counts
 

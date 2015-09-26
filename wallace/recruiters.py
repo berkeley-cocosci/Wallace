@@ -1,6 +1,9 @@
 """Recruiters manage the flow of participants to the experiment."""
 
 from __future__ import print_function
+from builtins import str
+from builtins import range
+from builtins import object
 
 import os
 from psiturk.psiturk_config import PsiturkConfig
@@ -53,7 +56,7 @@ class SimulatedRecruiter(object):
         self.recruit_participants(exp, n=1)
 
     def recruit_participants(self, n=1, exp=None):
-        for i in xrange(n):
+        for i in range(n):
             newcomer = exp.agent_type()
             exp.newcomer_arrival_trigger(newcomer)
 

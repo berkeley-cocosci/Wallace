@@ -1,5 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+"""Test the command line utility."""
+
+from builtins import object
+
 import os
 import subprocess
 

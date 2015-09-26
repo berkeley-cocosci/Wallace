@@ -1,3 +1,7 @@
+from builtins import str
+from builtins import range
+from builtins import object
+
 from wallace import networks, nodes, db, models
 import random
 from nose.tools import assert_raises

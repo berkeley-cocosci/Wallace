@@ -1,4 +1,8 @@
 from __future__ import print_function
+from builtins import str
+from builtins import range
+from builtins import object
+
 import sys
 from datetime import datetime
 from wallace import models, db, nodes
@@ -73,7 +77,7 @@ class TestModels(object):
         assert isinstance(net.max_size, int)
         assert isinstance(net.full, bool)
         assert net.full is False
-        assert isinstance(net.role, unicode)
+        assert isinstance(net.role, str)
         assert net.role == "default"
         assert net.property1 is None
         assert net.property2 is None
@@ -280,7 +284,7 @@ class TestModels(object):
         node1 = models.Node()
         self.db.add(node1)
 
-        for i in xrange(5):
+        for i in range(5):
             assert len(node1.vectors(direction="outgoing")) == i
             new_node = models.Node()
             self.add(new_node)
@@ -300,7 +304,7 @@ class TestModels(object):
         self.db.add(node1)
         self.db.commit()
 
-        for i in xrange(5):
+        for i in range(5):
             assert len(node1.vectors(direction="incoming")) == i
             new_node = models.Node()
             self.db.add(new_node)

@@ -1,5 +1,9 @@
 """Network structures commonly used in simulations of evolution."""
 
+from __future__ import division
+from builtins import range
+from past.utils import old_div
+
 from .models import Network
 from .nodes import Agent, Source
 from sqlalchemy import and_
@@ -179,7 +183,7 @@ class DiscreteGenerational(Network):
                              agent_type.generation == current_generation-1))\
                 .all()
             prev_fits = [p.fitness for p in prev_agents]
-            prev_probs = [(f/(1.0*sum(prev_fits))) for f in prev_fits]
+            prev_probs = [(old_div(f, (1.0*sum(prev_fits)))) for f in prev_fits]
 
             rnd = random.random()
             temp = 0.0
@@ -237,7 +241,7 @@ class ScaleFree(Network):
 
         # ...then add newcomers one by one with preferential attachment.
         else:
-            for idx_newvector in xrange(self.m):
+            for idx_newvector in range(self.m):
 
                 these_agents = [
                     a for a in agents if (

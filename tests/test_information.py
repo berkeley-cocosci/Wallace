@@ -1,3 +1,5 @@
+from builtins import object
+
 from wallace import models, information, db
 
 

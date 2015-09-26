@@ -1,3 +1,6 @@
+from builtins import range
+from builtins import object
+
 from wallace import processes, networks, nodes, db, models
 from wallace.nodes import Agent
 
@@ -74,7 +77,7 @@ class TestProcesses(object):
             agent.receive()
 
         # Run a Moran process for 100 steps.
-        for i in xrange(100):
+        for i in range(100):
             processes.moran_cultural(net)
             for agent in net.nodes(type=Agent):
                 agent.receive()

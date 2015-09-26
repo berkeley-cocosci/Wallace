@@ -1,6 +1,8 @@
 """Import custom routes into the experiment server."""
 
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
 
 from flask import Blueprint, request, Response, send_from_directory, \
     jsonify, render_template
@@ -18,7 +20,9 @@ from wallace import db, nodes, models, information
 
 import imp
 import inspect
-import urllib
+import urllib.request
+import urllib.parse
+import urllib.error
 from operator import attrgetter
 import datetime
 
@@ -464,7 +468,7 @@ def api_info(info_id):
             return Response(js, status=403, mimetype='application/json')
 
         try:
-            cnts = urllib.unquote(request.values['contents']).decode('utf8')
+            cnts = urllib.parse.unquote(request.values['contents']).decode('utf8')
         except:
             exp.log("Error: received information POST request from Node {}, but contents not specified. Returning status 403".format(origin_id), origin_id)
             page = error_page(error_type="/information POST, no contents")

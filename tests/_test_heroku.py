@@ -1,5 +1,7 @@
 """Tests for the Wallace API."""
 
+from builtins import object
+
 import subprocess
 import re
 import os

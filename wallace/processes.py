@@ -1,6 +1,8 @@
 """Processes manipulate networks and their parts."""
 
 from __future__ import absolute_import
+from __future__ import division
+from past.utils import old_div
 
 from .nodes import Agent, Source
 import random
@@ -83,7 +85,7 @@ def transmit_by_fitness(from_whom, to_whom=None, what=None):
     """Choose a parent with probability proportional to their fitness."""
     parents = from_whom
     parent_fitnesses = [p.fitness for p in parents]
-    parent_probs = [(f/(1.0*sum(parent_fitnesses))) for f in parent_fitnesses]
+    parent_probs = [(old_div(f, (1.0*sum(parent_fitnesses)))) for f in parent_fitnesses]
 
     rnd = random.random()
     temp = 0.0

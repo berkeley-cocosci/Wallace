@@ -1,3 +1,10 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+"""Test environments."""
+
+from builtins import object
+
 from wallace import nodes, db, information
 
 

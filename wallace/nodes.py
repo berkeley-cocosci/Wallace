@@ -1,5 +1,8 @@
 """Define kinds of nodes: agents, sources, and environments."""
 
+from builtins import str
+from builtins import range
+
 from wallace.models import Node, Info
 from wallace.information import State
 from sqlalchemy import Integer
