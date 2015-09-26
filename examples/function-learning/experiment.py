@@ -1,5 +1,9 @@
 """A function-learning experiment."""
 
+from __future__ import division
+from builtins import range
+from past.utils import old_div
+
 from wallace.experiments import Experiment
 from wallace.nodes import ReplicatorAgent, Source
 from wallace.networks import Chain
@@ -51,7 +55,7 @@ class AbstractFnSource(Source):
         x_min = 1
         x_max = 100
 
-        x_values = random.sample(xrange(x_min, x_max), 20)
+        x_values = random.sample(list(range(x_min, x_max)), 20)
         y_values = [self.func(x) for x in x_values]
 
         data = {"x": x_values, "y": y_values}
@@ -87,7 +91,7 @@ class SinusoidalFunctionSource(AbstractFnSource, Source):
 
 
 class RandomMappingFunctionSource(AbstractFnSource, Source):
-    m = random.shuffle(range(1, 100))
+    m = random.shuffle(list(range(1, 100)))
 
     def func(self, x):
         return self.m[x - 1]

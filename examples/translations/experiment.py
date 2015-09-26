@@ -1,3 +1,6 @@
+from __future__ import print_function
+from builtins import str
+
 import wallace
 from wallace.experiments import Experiment
 from wallace.recruiters import SimulatedRecruiter
@@ -30,7 +33,7 @@ class Translations(Experiment):
             self.network.add(source)
             source.connect(direction="to", whom=self.network.nodes(type=Agent))
             self.save()
-            print "Added initial source: " + str(source)
+            print("Added initial source: " + str(source))
 
         # Open recruitment
         self.recruiter().open_recruitment(self)

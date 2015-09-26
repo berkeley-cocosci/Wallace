@@ -1,3 +1,7 @@
+from __future__ import print_function
+from builtins import str
+from builtins import range
+
 import wallace
 from wallace.experiments import Experiment
 from wallace.recruiters import SimulatedRecruiter
@@ -79,7 +83,7 @@ class SubstitutionCipher(Transformation):
     keyword = "zebras"
 
     # Generate the ciphertext alphabet
-    kw_unique = ''.join(OrderedDict.fromkeys(keyword).keys())
+    kw_unique = ''.join(list(OrderedDict.fromkeys(keyword).keys()))
     non_keyword_letters = ''.join([l for l in alphabet if l not in kw_unique])
     ciphertext_alphabet = kw_unique + non_keyword_letters
 
