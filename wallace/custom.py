@@ -529,8 +529,8 @@ def info():
     try:
         info_type = request.values["info_type"]
     except:
-        info_type = None
-    if info_type is not None:
+        info_type = models.Info
+    if info_type is not models.Info:
         try:
             info_type = exp.known_classes[info_type]
         except:
@@ -538,6 +538,17 @@ def info():
             page = error_page(error_type="/info, unknown type")
             js = dumps({"status": "error", "html": page})
             return Response(js, status=403, mimetype='application/json')
+
+    # get my_infos
+    try:
+        just_my_infos = request.values["just_my_infos"]
+    except:
+        just_my_infos = "false"
+    if just_my_infos not in ["true", "false"]:
+        exp.log("Error: /info request, bad just_my_infos {}".format(just_my_infos), key)
+        page = error_page(error_type="/info, bad just_my_infos")
+        js = dumps({"status": "error", "html": page})
+        return Response(js, status=403, mimetype='application/json')
 
     if request.method == "GET":
 
@@ -554,13 +565,27 @@ def info():
         except:
             info_id = None
 
-        # execute the experiment method:
+        # execute the server method:
         exp.log("/info GET request. Params: participant_id: {}, node_id: {}, info_type: {}, \
-                 info_id: {}."
-                .format(participant_id, node_id, info_type, info_id), key)
+                 info_id: {}, just_my_infos: {}."
+                .format(participant_id, node_id, info_type, info_id, just_my_infos), key)
+
         node = models.Node.query.get(node_id)
+
+        # if no info_id is specified get loads of infos
         if info_id is None:
-            infos = node.infos(type=info_type)
+            my_infos = node.infos(type=info_type)
+
+            if just_my_infos == "false":
+                received_transmissions = models.Transmission.query.filter_by(destination_id=node_id, status="received").\
+                    with_entities(models.Transmission.info_id).all()
+                received_info_ids = [t.info_id for t in received_transmissions]
+                received_infos = models.Info.query.filter(models.Info.id.in_(received_info_ids)).all()
+                received_infos = [i for i in received_infos if isinstance(i, type)]
+            else:
+                received_infos = []
+
+            infos = my_infos + received_infos
 
             exp.info_get_request(participant_id=participant_id, node=node, infos=infos)
             session.commit()
