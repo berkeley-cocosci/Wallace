@@ -296,7 +296,7 @@ def deploy_sandbox_shared_setup(verbose=True, web_procs=1):
 
         "heroku pg:wait",
 
-        "heroku addons:create redistogo:small",
+        "heroku addons:create heroku-redis:premium-1",
 
         "heroku addons:create papertrail",
 
