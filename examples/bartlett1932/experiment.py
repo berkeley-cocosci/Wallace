@@ -32,10 +32,11 @@ class Bartlett1932(Experiment):
                     net.add_source(source)
             self.save()
 
-    def add_node_to_network(self, participant_id, node, network):
+    def add_node_to_network(self, participant, node, network):
         """When an agent is created, add it to the network and take a step."""
         network.add_node(node)
         processes.random_walk(network)
+        node.receive()
 
     def recruit(self):
         """Recruit participants to the experiment as needed."""
@@ -43,14 +44,6 @@ class Bartlett1932(Experiment):
             self.recruiter().recruit_participants(n=1)
         else:
             self.recruiter().close_recruitment()
-
-    def bonus(self, participant=None):
-        """Compute the bonus for the given participant.
-
-        This is called automatically when a participant finishes,
-        it is called immediately prior to the participant_submission_trigger
-        """
-        return 1
 
 
 class WarOfTheGhostsSource(Source):

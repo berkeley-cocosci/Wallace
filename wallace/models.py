@@ -5,7 +5,7 @@ from datetime import datetime
 from .db import Base
 
 from sqlalchemy import ForeignKey, or_, and_
-from sqlalchemy import Column, String, Text, Enum, Integer, Boolean, DateTime
+from sqlalchemy import Column, String, Text, Enum, Integer, Boolean, DateTime, Float
 from sqlalchemy.orm import relationship, validates
 
 import inspect
@@ -30,6 +30,98 @@ class SharedMixin(object):
     property3 = Column(String(26), nullable=True, default=None)
     property4 = Column(String(26), nullable=True, default=None)
     property5 = Column(String(26), nullable=True, default=None)
+
+
+class Participant(Base, SharedMixin):
+
+    """An ex silico participant."""
+
+    __tablename__ = "participant"
+
+    # the participant type -- this allows for inheritance
+    type = Column(String(50))
+    __mapper_args__ = {
+        'polymorphic_on': type,
+        'polymorphic_identity': 'participant'
+    }
+
+    worker_id = Column(String(50), nullable=False)
+    assignment_id = Column(String(50), nullable=False, index=True)
+    unique_id = Column(String(50), nullable=False, index=True)
+    hit_id = Column(String(50), nullable=False)
+    mode = Column(String(50), nullable=False)
+
+    end_time = Column(DateTime)
+
+    base_pay = Column(Float)
+    bonus = Column(Float)
+
+    status = Column(Enum("working", "submitted", "approved", "rejected", "returned", "abandoned", "did_not_attend", "bad_data", "missing_notification", name="participant_status"),
+                    nullable=False, default="working", index=True)
+
+    def __init__(self, worker_id, assignment_id, hit_id, mode):
+
+        self.worker_id = worker_id
+        self.assignment_id = assignment_id
+        self.hit_id = hit_id
+        self.unique_id = worker_id + ":" + assignment_id
+        self.mode = mode
+
+    def __json__(self):
+        return {
+            "id": self.id,
+            "type": self.type,
+            "worker_id": self.worker_id,
+            "assignment_id": self.assignment_id,
+            "unique_id": self.unique_id,
+            "hit_id": self.hit_id,
+            "mode": self.mode,
+            "end_time": self.end_time,
+            "base_pay": self.base_pay,
+            "bonus": self.bonus,
+            "status": self.status,
+            "property1": self.property1,
+            "property2": self.property2,
+            "property3": self.property3,
+            "property4": self.property4,
+            "property5": self.property5
+        }
+
+
+class Question(Base, SharedMixin):
+
+    """A class that stores the response of a participant to
+    a debriefing question"""
+
+    __tablename__ = "question"
+
+    # the question type -- this allows for inheritance
+    type = Column(String(50))
+    __mapper_args__ = {
+        'polymorphic_on': type,
+        'polymorphic_identity': 'question'
+    }
+
+    # the participant who made the response
+    participant_id = Column(Integer, ForeignKey('participant.id'))
+    participant = relationship(Participant, backref='all_questions')
+
+    # the network that this node is a part of
+    question_id = Column(Integer, nullable=False)
+
+    # the text of the question
+    question = Column(String(250), nullable=False)
+
+    # the response from the participants
+    response = Column(String(1000), nullable=False)
+
+    def __init__(self, participant, question, response, question_id):
+
+        self.participant = participant
+        self.participant_id = participant.id
+        self.question_id = question_id
+        self.question = question
+        self.response = response
 
 
 class Network(Base, SharedMixin):
@@ -312,9 +404,16 @@ class Node(Base, SharedMixin):
     # the time when the node changed from alive->dead or alive->failed
     time_of_death = Column(DateTime, default=None)
 
-    # the participant id is the sha512 hash of the psiTurk uniqueId of the
-    # participant who was this node.
-    participant_id = Column(String(128), default=None, index=True)
+    # the participant whose node this is
+    participant_id = Column(Integer, ForeignKey('participant.id'), index=True)
+    participant = relationship(Participant, backref='all_nodes')
+
+    def __init__(self, network, participant=None):
+        self.network = network
+        self.network_id = network.id
+        if participant is not None:
+            self.participant = participant
+            self.participant_id = participant.id
 
     def __repr__(self):
         """The string representation of a node."""
