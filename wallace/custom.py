@@ -371,6 +371,7 @@ def worker_complete():
 def check_worker_status():
     try:
         participant = models.Participant.query.filter_by(unique_id=request.args['uniqueId']).one()
+        print participant.status
         if participant.status == "ready_to_submit":
             status = 3
         else:
