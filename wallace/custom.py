@@ -400,7 +400,7 @@ def get_participant(participant_id):
     return Response(js, status=200, mimetype='application/json')
 
 
-@custom_code.route("/participant/<participant_id>/submit", methods=["POST"])
+@custom_code.route("/participant/<participant_id>/ready_to_submit", methods=["POST"])
 def submit_participant(participant_id):
 
     try:
@@ -416,29 +416,8 @@ def submit_participant(participant_id):
         }
         return Response(dumps(data), status=403, mimetype='application/json')
 
-    if participant.mode == "debug":
-        pass
-    else:
-        if participant.mode == "sandbox":
-            url = "https://workersandbox.mturk.com/mturk/externalSubmit"
-        elif participant.mode == "live":
-            url = "https://www.mturk.com/mturk/externalSubmit"
-
-        req = requests.post(url + "?assignmentId=" + participant.assignment_id)
-
-        print req
-        try:
-            print req.status_code
-        except:
-            pass
-        try:
-            print req.text
-        except:
-            pass
-        try:
-            print req.json()
-        except:
-            pass
+    participant.status = "ready_to_submit"
+    session.commit()
 
     return Response(status=200, mimetype='application/json')
 

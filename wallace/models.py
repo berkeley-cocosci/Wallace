@@ -56,7 +56,7 @@ class Participant(Base, SharedMixin):
     base_pay = Column(Float)
     bonus = Column(Float)
 
-    status = Column(Enum("working", "submitted", "approved", "rejected", "returned", "abandoned", "did_not_attend", "bad_data", "missing_notification", name="participant_status"),
+    status = Column(Enum("working", "ready_to_submit", "submitted", "approved", "rejected", "returned", "abandoned", "did_not_attend", "bad_data", "missing_notification", name="participant_status"),
                     nullable=False, default="working", index=True)
 
     def __init__(self, worker_id, assignment_id, hit_id, mode):
