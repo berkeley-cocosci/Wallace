@@ -369,14 +369,16 @@ def worker_complete():
 
 @custom_code.route('/check_worker_status', methods=['GET'])
 def check_worker_status():
-    try:
-        participant = models.Participant.query.filter_by(unique_id=request.args['uniqueId']).one()
-        print participant.status
-        if participant.status == "ready_to_submit":
-            status = 3
-        else:
-            status = 1
-    except:
+    print "got here 1"
+    unique_id = request.args['uniqueId']
+    print "got here 2"
+    participant = models.Participant.query.filter_by(unique_id=unique_id).all()
+    print participant.status
+    if participant.status == "ready_to_submit":
+        print "got here 3"
+        status = 3
+    else:
+        print "got here 4"
         status = 0
     resp = {"status": status}
     return jsonify(**resp)
