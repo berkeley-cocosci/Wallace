@@ -38,33 +38,26 @@ go_to_page = function(page) {
 // go back to psiturk
 submit_assignment = function() {
     reqwest({
-        url: "/participant/" + participant_id + "/ready_to_submit",
-        method: "post",
-        type: "json",
-        success: function(resp) {
+        url: "/participant/" + participant_id,
+        method: "get",
+        type: 'json',
+        success: function (resp) {
+            mode = resp.participant.mode;
+            hit_id = resp.participant.hit_id;
+            assignment_id = resp.participant.assignment_id;
+            worker_id = resp.participant.worker_id;
             reqwest({
-                url: "/participant/" + participant_id,
-                method: "get",
+                url: "/ad_address/" + mode + '/' + hit_id,
+                method: 'get',
                 type: 'json',
                 success: function (resp) {
-                    mode = resp.participant.mode;
-                    hit_id = resp.participant.hit_id;
-                    assignment_id = resp.participant.assignment_id;
-                    worker_id = resp.participant.worker_id;
-                    reqwest({
-                        url: "/ad_address/" + mode + '/' + hit_id,
-                        method: 'get',
-                        type: 'json',
-                        success: function (resp) {
-                            allow_exit();
-                            window.location = resp.address + "?uniqueId=" + worker_id + ":" + assignment_id;
-                        },
-                        error: function (err) {
-                            console.log(err);
-                            err_response = JSON.parse(err.response);
-                            $('body').html(err_response.html);
-                        }
-                    });
+                    allow_exit();
+                    window.location = resp.address + "?uniqueId=" + worker_id + ":" + assignment_id;
+                },
+                error: function (err) {
+                    console.log(err);
+                    err_response = JSON.parse(err.response);
+                    $('body').html(err_response.html);
                 }
             });
         }
