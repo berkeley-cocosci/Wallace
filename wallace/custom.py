@@ -375,11 +375,10 @@ def check_worker_status():
             status = 3
         else:
             status = 1
-        resp = {"status": status}
-        return jsonify(**resp)
     except:
-        resp = {"status": "bad request"}
-        return jsonify(**resp)
+        status = 0
+    resp = {"status": status}
+    return jsonify(**resp)
 
 
 @custom_code.route("/participant/<worker_id>/<hit_id>/<assignment_id>/<mode>", methods=["POST"])
