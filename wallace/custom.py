@@ -550,7 +550,6 @@ def node_neighbors(node_id):
     nodes = node.neighbours(
         type=node_type,
         failed=failed,
-        vector_failed=vector_failed,
         connection=connection)
 
     try:
