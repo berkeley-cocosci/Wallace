@@ -496,16 +496,11 @@ def create_question(participant_id):
             mimetype='application/json')
 
     question = request_parameter(request=request, parameter="question")
-    if type(question) == Response:
-        return question
-
     response = request_parameter(request=request, parameter="response")
-    if type(response) == Response:
-        return response
-
     question_id = request_parameter(request=request, parameter="question_id", parameter_type="int")
-    if type(question_id) == Response:
-        return question_id
+    for x in [question, response, question_id]:
+        if type(x) == Response:
+            return x
 
     # execute the request
     models.Question(participant=participant, question=question, response=response, question_id=question_id)
@@ -535,10 +530,8 @@ def node_neighbors(node_id):
     # get the parameters
     node_type = request_parameter(request=request, parameter="node_type", parameter_type="known_class", default=models.Node)
     failed = request_parameter(request=request, parameter="failed", parameter_type="bool", default=False)
-    vector_failed = request_parameter(request=request, parameter="vector_failed", parameter_type="bool", default=False)
     connection = request_parameter(request=request, parameter="connection", default="to")
-
-    for x in [node_type, failed, vector_failed, connection]:
+    for x in [node_type, failed, connection]:
         if type(x) == Response:
             return x
 
@@ -680,12 +673,10 @@ def node_vectors(node_id):
 
     # get the parameters
     direction = request_parameter(request=request, parameter="direction", default="all")
-    if type(direction) == Response:
-        return direction
-
     failed = request_parameter(request=request, parameter="failed", parameter_type="bool", default=False)
-    if type(failed) == Response:
-        return failed
+    for x in [direction, failed]:
+        if type(x) == Response:
+            return x
 
     # execute the request
     exp.log("/vector GET request. Params: node_id: {}, other_node_id: {}, \
@@ -897,16 +888,14 @@ def info_post(node_id):
 
     # get the parameters
     info_type = request_parameter(request=request, parameter="info_type", parameter_type="known_class", default=models.Info)
-    if type(info_type) == Response:
-        return info_type
-
     contents = request_parameter(request=request, parameter="contents")
-    if type(contents) == Response:
-        return contents
 
     exp.log("/info POST request. Params: node_id: {}, info_type: {}, \
              contents: {}"
             .format(node_id, info_type, contents))
+    for x in [info_type, contents]:
+        if type(x) == Response:
+            return x
 
     # check the node exists
     node = models.Node.query.get(node_id)
@@ -941,16 +930,13 @@ def node_transmissions(node_id):
 
     # get the parameters
     direction = request_parameter(request=request, parameter="direction", default="to")
-    if type(direction) == Response:
-        return direction
-
     status = request_parameter(request=request, parameter="status", default="all")
-    if type(status) == Response:
-        return status
-
     exp.log("/transmission GET request. Params: node_id: {}, direction: {}, \
              status: {}"
             .format(node_id, direction, status))
+    for x in [direction, status]:
+        if type(x) == Response:
+            return x
 
     # check the node exists
     node = models.Node.query.get(node_id)
