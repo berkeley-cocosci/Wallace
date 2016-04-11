@@ -538,10 +538,6 @@ def node_neighbors(node_id):
         if type(x) == Response:
             return x
 
-    exp.log("/node GET request. Params: node: {}, node_type: {}, \
-             failed: {}, vector_failed: {}, connection: {}"
-            .format(node_id, node_type, failed, vector_failed, connection))
-
     # make sure the node exists
     node = models.Node.query.get(node_id)
     if node is None:
@@ -706,9 +702,6 @@ def node_vectors(node_id):
             return x
 
     # execute the request
-    exp.log("/vector GET request. Params: node_id: {}, other_node_id: {}, \
-             direction: {}, failed: {}"
-            .format(node_id, direction, failed))
     node = models.Node.query.get(node_id)
     if node is None:
         exp.log("Error: /node/{}/vectors, node {} does not exist".format(node_id))
@@ -755,10 +748,6 @@ def connect(node_id, other_node_id):
     direction = request_parameter(request=request, parameter="direction", default="to")
     if type(direction == Response):
         return direction
-
-    exp.log("/vector POST request. Params: node_id: {}, other_node_id: {}, \
-             direction: {}"
-            .format(node_id, other_node_id, direction))
 
     # check the nodes exist
     node = models.Node.query.get(node_id)
@@ -812,9 +801,6 @@ def connect(node_id, other_node_id):
 @custom_code.route("/info/<int:node_id>/<int:info_id>", methods=["GET"])
 def get_info(node_id, info_id):
     exp = experiment(session)
-
-    exp.log("/info GET request. Params: node_id: {}, info_id: {}."
-            .format(node_id, info_id))
 
     # check the node exists
     node = models.Node.query.get(node_id)
@@ -870,9 +856,6 @@ def node_infos(node_id):
     if type(info_type) == Response:
         return info_type
 
-    exp.log("/node/infos request. Params: node_id: {}, info_type: {}"
-            .format(node_id, info_type))
-
     # check the node exists
     node = models.Node.query.get(node_id)
     if node is None:
@@ -924,9 +907,6 @@ def node_received_infos(node_id):
     if type(info_type) == Response:
         return info_type
 
-    exp.log("/node/received_infos request. Params: node_id: {}, info_type: {}"
-            .format(node_id, info_type))
-
     # check the node exists
     node = models.Node.query.get(node_id)
     if node is None:
@@ -976,10 +956,6 @@ def info_post(node_id):
     # get the parameters
     info_type = request_parameter(request=request, parameter="info_type", parameter_type="known_class", default=models.Info)
     contents = request_parameter(request=request, parameter="contents")
-
-    exp.log("/info POST request. Params: node_id: {}, info_type: {}, \
-             contents: {}"
-            .format(node_id, info_type, contents))
     for x in [info_type, contents]:
         if type(x) == Response:
             return x
@@ -1030,9 +1006,6 @@ def node_transmissions(node_id):
     # get the parameters
     direction = request_parameter(request=request, parameter="direction", default="to")
     status = request_parameter(request=request, parameter="status", default="all")
-    exp.log("/transmission GET request. Params: node_id: {}, direction: {}, \
-             status: {}"
-            .format(node_id, direction, status))
     for x in [direction, status]:
         if type(x) == Response:
             return x
@@ -1114,10 +1087,6 @@ def node_transmit(node_id):
 
     what = request_parameter(request=request, parameter="what", optional=True)
     to_whom = request_parameter(request=request, parameter="to_whom", optional=True)
-
-    exp.log("/node/transmit request. Params: node_id: {}, what: {}, \
-             to_whom: {}"
-            .format(node_id, what, to_whom))
 
     # check the node exists
     node = models.Node.query.get(node_id)
@@ -1204,9 +1173,6 @@ def transformation_get(node_id):
     if type(transformation_type) == Response:
         return transformation_type
 
-    exp.log("/transformation GET request. Params: node_id: {}, transformation_type: {}"
-            .format(node_id, transformation_type))
-
     # check the node exists
     node = models.Node.query.get(node_id)
     if node is None:
@@ -1246,10 +1212,6 @@ def transformation_post(node_id, info_in_id, info_out_id):
     transformation_type = request_parameter(request=request, parameter="transformation_type", parameter_type="known_class", default=models.Transformation)
     if type(transformation_type) == Response:
         return transformation_type
-
-    exp.log("/transformation POST request. Params: node_id: {}, info_in_id: {}, \
-             info_out_id: {}"
-            .format(node_id, info_in_id, info_out_id))
 
     # check the node etc exists
     node = models.Node.query.get(node_id)
