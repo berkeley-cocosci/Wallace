@@ -1234,12 +1234,6 @@ def transformation_post(node_id, info_in_id, info_out_id):
         js = dumps({"status": "error", "html": page})
         return Response(js, status=400, mimetype='application/json')
 
-    if node_id != info_out.origin_id:
-        exp.log("Error: /transformation POST request, node not origin of info_out")
-        page = error_page(error_type="/transformation POST, node not origin of info_out")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=403, mimetype='application/json')
-
     try:
         # execute the request
         transformation = transformation_type(info_in=info_in, info_out=info_out)
