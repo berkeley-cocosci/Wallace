@@ -644,15 +644,15 @@ def create_node(participant_id):
             status=400,
             mimetype='application/json')
 
-    # execute the request
-    exp.log("/node POST request. Params: participant_id: {}".format(participant_id))
-    network = exp.get_network_for_participant(participant_id=participant_id)
-
-    if network is None:
-        exp.log("No networks available for participant.")
-        return Response(dumps({"status": "error"}), status=403)
-
     try:
+        # execute the request
+        exp.log("/node POST request. Params: participant_id: {}".format(participant_id))
+        network = exp.get_network_for_participant(participant_id=participant_id)
+
+        if network is None:
+            exp.log("No networks available for participant.")
+            return Response(dumps({"status": "error"}), status=403)
+
         node = exp.make_node_for_participant(
             participant=participant,
             network=network)
