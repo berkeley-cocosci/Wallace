@@ -356,15 +356,18 @@ def ad_address(mode, hit_id):
 
 @custom_code.route("/participant/<worker_id>/<hit_id>/<assignment_id>/<mode>", methods=["POST"])
 def create_participant(worker_id, hit_id, assignment_id, mode):
+    # check this worker hasn't already taken part
     parts = models.Participant.query.filter_by(worker_id=worker_id).all()
     if parts:
         print "participant already exists!"
         return Response(status=200)
 
+    # make the participant
     participant = models.Participant(worker_id=worker_id, assignment_id=assignment_id, hit_id=hit_id, mode=mode)
     session.add(participant)
     session.commit()
 
+    # make a psiturk participant too, for now
     from psiturk.models import Participant as PsiturkParticipant
     psiturk_participant = PsiturkParticipant(workerid=worker_id, assignmentid=assignment_id, hitid=hit_id)
     session_psiturk.add(psiturk_participant)
