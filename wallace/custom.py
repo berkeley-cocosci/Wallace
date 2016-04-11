@@ -660,7 +660,6 @@ def create_node(participant_id):
         assign_properties(node, request)
 
         exp.add_node_to_network(
-            participant=participant,
             node=node,
             network=network)
 
