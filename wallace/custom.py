@@ -18,6 +18,7 @@ import datetime
 from json import dumps
 import os
 import requests
+import traceback
 
 from rq import Queue, get_current_job
 from worker import conn
@@ -311,7 +312,6 @@ def return_page(page, request):
                 participant_id=participant_id
             )
         except:
-            import traceback
             traceback.print_exc()
             return error_page(error_type="{} args missing".format(page))
 
@@ -383,10 +383,9 @@ def get_participant(participant_id):
     try:
         participant = models.Participant.query.filter_by(id=participant_id).one()
     except NoResultFound:
+        traceback.print_exc()
         exp.log("Error: /participant GET request for unrecognized participant_id {}.".format(participant_id))
-        page = error_page(
-            error_text="You cannot continue because your id does not match anyone in our records.",
-            error_type="/participant GET no participant found")
+        page = error_page(error_type="/participant GET: no participant found")
         data = {
             "status": "error",
             "html": page
@@ -453,6 +452,7 @@ def create_question(participant_id):
     try:
         participant = models.Participant.query.filter_by(id=participant_id).one()
     except NoResultFound:
+        traceback.print_exc()
         exp.log("Error: /question POST request from unrecognized participant_id {}.".format(participant_id))
         page = error_page(
             error_text="You cannot continue because your worker id does not match anyone in our records.",
@@ -554,11 +554,23 @@ def node_neighbors(node_id):
         vector_failed=vector_failed,
         connection=connection)
 
-    # ping the experiment
-    exp.node_get_request(
-        node=node,
-        nodes=nodes)
-    session.commit()
+    try:
+        # ping the experiment
+        exp.node_get_request(
+            node=node,
+            nodes=nodes)
+        session.commit()
+    except:
+        traceback.print_exc()
+        exp.log("Error: /node/neighbors request server error.")
+        page = error_page(
+            participant=node.participant,
+            error_type="/node/neighbors server error")
+        data = {
+            "status": "error",
+            "html": page
+        }
+        return Response(dumps(data), status=403, mimetype='application/json')
 
     # return the data
     data = []
@@ -588,6 +600,7 @@ def create_node(participant_id):
     try:
         participant = models.Participant.query.filter_by(id=participant_id).one()
     except NoResultFound:
+        traceback.print_exc()
         exp.log("Error: /node POST request from unrecognized participant_id {}.".format(participant_id))
         page = error_page(
             error_text="You cannot continue because your worker id does not match anyone in our records.",
@@ -641,7 +654,7 @@ def create_node(participant_id):
         exp.log("No networks available for participant.")
         return Response(dumps({"status": "error"}), status=403)
 
-    else:
+    try:
         node = exp.make_node_for_participant(
             participant=participant,
             network=network)
@@ -653,11 +666,22 @@ def create_node(participant_id):
             node=node,
             network=network)
 
-    session.commit()
+        session.commit()
 
-    # ping the experument
-    exp.node_post_request(participant=participant, node=node)
-    session.commit()
+        # ping the experiment
+        exp.node_post_request(participant=participant, node=node)
+        session.commit()
+    except:
+        traceback.print_exc()
+        exp.log("Error: /node POST request server error.")
+        page = error_page(
+            error_text="You cannot continue because our server has crashed.",
+            error_type="/node POST server error")
+        data = {
+            "status": "error",
+            "html": page
+        }
+        return Response(dumps(data), status=403, mimetype='application/json')
 
     # return the data
     data = node.__json__()
@@ -689,11 +713,23 @@ def node_vectors(node_id):
         js = dumps({"status": "error", "html": page})
         return Response(js, status=400, mimetype='application/json')
 
-    vectors = node.vectors(direction=direction, failed=failed)
+    try:
+        vectors = node.vectors(direction=direction, failed=failed)
 
-    # ping the experument
-    exp.vector_get_request(node=node, vectors=vectors)
-    session.commit()
+        # ping the experiment
+        exp.vector_get_request(node=node, vectors=vectors)
+        session.commit()
+    except:
+        traceback.print_exc()
+        exp.log("Error: /node/vectors GET request server error.")
+        page = error_page(
+            error_text="You cannot continue because our server has crashed.",
+            error_type="/node/vectors GET server error")
+        data = {
+            "status": "error",
+            "html": page
+        }
+        return Response(dumps(data), status=403, mimetype='application/json')
 
     # return the data
     data = []
@@ -737,16 +773,28 @@ def connect(node_id, other_node_id):
         return Response(js, status=400, mimetype='application/json')
 
     # execute the request
-    vectors = node.connect(whom=other_node, direction=direction)
-    for v in vectors:
-        assign_properties(v, request)
+    try:
+        vectors = node.connect(whom=other_node, direction=direction)
+        for v in vectors:
+            assign_properties(v, request)
 
-    # ping the experiment
-    exp.vector_post_request(
-        node=node,
-        vectors=vectors)
+        # ping the experiment
+        exp.vector_post_request(
+            node=node,
+            vectors=vectors)
 
-    session.commit()
+        session.commit()
+    except:
+        traceback.print_exc()
+        exp.log("Error: /vector POST request server error.")
+        page = error_page(
+            error_text="You cannot continue because our server has crashed.",
+            error_type="/vector POST server error")
+        data = {
+            "status": "error",
+            "html": page
+        }
+        return Response(dumps(data), status=403, mimetype='application/json')
 
     # return the data
     data = []
@@ -786,9 +834,21 @@ def get_info(node_id, info_id):
         js = dumps({"status": "error", "html": page})
         return Response(js, status=403, mimetype='application/json')
 
-    # ping the experiment
-    exp.info_get_request(node=node, info=info)
-    session.commit()
+    try:
+        # ping the experiment
+        exp.info_get_request(node=node, info=info)
+        session.commit()
+    except:
+        traceback.print_exc()
+        exp.log("Error: /info GET request server error.")
+        page = error_page(
+            error_text="You cannot continue because our server has crashed.",
+            error_type="/info GET server error")
+        data = {
+            "status": "error",
+            "html": page
+        }
+        return Response(dumps(data), status=403, mimetype='application/json')
 
     # return the data
     data = info.__json__()
@@ -818,15 +878,27 @@ def node_infos(node_id):
         js = dumps({"status": "error", "html": page})
         return Response(js, status=400, mimetype='application/json')
 
-    # execute the request:
-    infos = node.infos(type=info_type)
+    try:
+        # execute the request:
+        infos = node.infos(type=info_type)
 
-    # ping the experiment
-    exp.info_get_request(
-        node=node,
-        infos=infos)
+        # ping the experiment
+        exp.info_get_request(
+            node=node,
+            infos=infos)
 
-    session.commit()
+        session.commit()
+    except:
+        traceback.print_exc()
+        exp.log("Error: /node/infos GET request server error.")
+        page = error_page(
+            error_text="You cannot continue because our server has crashed.",
+            error_type="/node/infos GET server error")
+        data = {
+            "status": "error",
+            "html": page
+        }
+        return Response(dumps(data), status=403, mimetype='application/json')
 
     # parse the data for returning
     data = []
@@ -863,12 +935,24 @@ def node_received_infos(node_id):
     # execute the request:
     infos = node.received_infos(type=info_type)
 
-    # ping the experiment
-    exp.info_get_request(
-        node=node,
-        infos=infos)
+    try:
+        # ping the experiment
+        exp.info_get_request(
+            node=node,
+            infos=infos)
 
-    session.commit()
+        session.commit()
+    except:
+        traceback.print_exc()
+        exp.log("Error: /node/received_infos GET request server error.")
+        page = error_page(
+            error_text="You cannot continue because our server has crashed.",
+            error_type="/node/received_infos GET server error")
+        data = {
+            "status": "error",
+            "html": page
+        }
+        return Response(dumps(data), status=403, mimetype='application/json')
 
     # parse the data for returning
     data = []
@@ -905,16 +989,28 @@ def info_post(node_id):
         js = dumps({"status": "error", "html": page})
         return Response(js, status=400, mimetype='application/json')
 
-    # execute the request
-    info = info_type(origin=node, contents=contents)
-    assign_properties(info, request)
+    try:
+        # execute the request
+        info = info_type(origin=node, contents=contents)
+        assign_properties(info, request)
 
-    # ping the experiment
-    exp.info_post_request(
-        node=node,
-        info=info)
+        # ping the experiment
+        exp.info_post_request(
+            node=node,
+            info=info)
 
-    session.commit()
+        session.commit()
+    except:
+        traceback.print_exc()
+        exp.log("Error: /info POST request server error.")
+        page = error_page(
+            error_text="You cannot continue because our server has crashed.",
+            error_type="/info POST server error")
+        data = {
+            "status": "error",
+            "html": page
+        }
+        return Response(dumps(data), status=403, mimetype='application/json')
 
     # return the data
     data = info.__json__()
@@ -953,9 +1049,21 @@ def node_transmissions(node_id):
         node.receive()
         session.commit()
 
-    # ping the experiment
-    exp.transmission_get_request(node=node, transmissions=transmissions)
-    session.commit()
+    try:
+        # ping the experiment
+        exp.transmission_get_request(node=node, transmissions=transmissions)
+        session.commit()
+    except:
+        traceback.print_exc()
+        exp.log("Error: /node/transmissions GET request server error.")
+        page = error_page(
+            error_text="You cannot continue because our server has crashed.",
+            error_type="/node/transmissions GET server error")
+        data = {
+            "status": "error",
+            "html": page
+        }
+        return Response(dumps(data), status=403, mimetype='application/json')
 
     # return the data
     data = []
@@ -1030,6 +1138,7 @@ def node_transmit(node_id):
             try:
                 what = exp.known_classes[what]
             except:
+                traceback.print_exc()
                 exp.log("Error: /node/transmit POST request, bad what: {}".format(request_parameter(request=request, parameter="what", optional=True)))
                 page = error_page(error_type="/node/transmit POST, info does not exist")
                 js = dumps({"status": "error", "html": page})
@@ -1049,6 +1158,7 @@ def node_transmit(node_id):
             try:
                 to_whom = exp.known_classes[to_whom]
             except:
+                traceback.print_exc()
                 exp.log("Error: /node/transmit POST request, bad to_whom: {}".format(request_parameter(request=request, parameter="to_whom", optional=True)))
                 page = error_page(error_type="/node/transmit POST, info does not exist")
                 js = dumps({"status": "error", "html": page})
@@ -1057,20 +1167,20 @@ def node_transmit(node_id):
     # execute the request
     try:
         transmissions = node.transmit(what=what, to_whom=to_whom)
+        for t in transmissions:
+            assign_properties(t, request)
+        session.commit()
+        # ping the experiment
+        exp.transmission_post_request(
+            node=node,
+            transmissions=transmissions)
+        session.commit()
     except:
+        traceback.print_exc()
         exp.log("Error: /node/transmit POST request, transmit failed")
         page = error_page(error_type="/node/transmit POST, transmit failed")
         js = dumps({"status": "error", "html": page})
         return Response(js, status=400, mimetype='application/json')
-    for t in transmissions:
-        assign_properties(t, request)
-    session.commit()
-
-    # ping the experiment
-    exp.transmission_post_request(
-        node=node,
-        transmissions=transmissions)
-    session.commit()
 
     # return the data
     data = []
@@ -1104,10 +1214,16 @@ def transformation_get(node_id):
 
     # execute the request
     transformations = node.transformations(transformation_type=transformation_type)
-
-    # ping the experiment
-    exp.transformation_get_request(node=node, transformations=transformations)
-    session.commit()
+    try:
+        # ping the experiment
+        exp.transformation_get_request(node=node, transformations=transformations)
+        session.commit()
+    except:
+        traceback.print_exc()
+        exp.log("Error: /node/transformations GET request failed")
+        page = error_page(error_type="/node/tranaformations GET failed")
+        js = dumps({"status": "error", "html": page})
+        return Response(js, status=400, mimetype='application/json')
 
     # return the data
     data = []
@@ -1160,14 +1276,21 @@ def transformation_post(node_id, info_in_id, info_out_id):
         js = dumps({"status": "error", "html": page})
         return Response(js, status=403, mimetype='application/json')
 
-    # execute the request
-    transformation = transformation_type(info_in=info_in, info_out=info_out)
-    assign_properties(transformation, request)
-    session.commit()
+    try:
+        # execute the request
+        transformation = transformation_type(info_in=info_in, info_out=info_out)
+        assign_properties(transformation, request)
+        session.commit()
 
-    # ping the experiment
-    exp.transformation_post_request(node=node, transformation=transformation)
-    session.commit()
+        # ping the experiment
+        exp.transformation_post_request(node=node, transformation=transformation)
+        session.commit()
+    except:
+        traceback.print_exc()
+        exp.log("Error: /transformation POST request failed")
+        page = error_page(error_type="/tranaformation POST failed")
+        js = dumps({"status": "error", "html": page})
+        return Response(js, status=400, mimetype='application/json')
 
     # return the data
     data = transformation.__json__()
