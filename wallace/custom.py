@@ -1,7 +1,7 @@
 """Import custom routes into the experiment server."""
 
 from flask import Blueprint, request, Response, send_from_directory, \
-    jsonify, render_template
+    render_template
 
 from psiturk.psiturk_config import PsiturkConfig
 from psiturk.user_utils import PsiTurkAuthorization
@@ -14,7 +14,6 @@ import imp
 import inspect
 import logging
 from operator import attrgetter
-import datetime
 from json import dumps
 import os
 import requests
@@ -23,7 +22,6 @@ import traceback
 from rq import Queue, get_current_job
 from worker import conn
 
-from sqlalchemy import and_, exc
 from sqlalchemy.orm.exc import NoResultFound
 
 # Load the configuration options.
