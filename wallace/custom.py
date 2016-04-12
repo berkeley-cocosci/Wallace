@@ -92,12 +92,7 @@ def launch():
     session_psiturk.commit()
     session.commit()
 
-    exp.log("...experiment launched.", "-----")
-
-    data = {
-        "status": "success"
-    }
-    return Response(dumps(data), status=200, mimetype='application/json')
+    return success_response(request_type="launch")
 
 
 @custom_code.route('/compute_bonus', methods=['GET'])
@@ -112,12 +107,9 @@ def compute_bonus():
 @custom_code.route('/summary', methods=['GET'])
 def summary():
     """Summarize the participants' status codes."""
-    exp = experiment(session)
-    data = {
-        "status": "success",
-        "summary": exp.log_summary()
-    }
-    return Response(dumps(data), status=200, mimetype='application/json')
+    return success_response(field="summary",
+                            data=exp.log_summary(),
+                            request_type="summary")
 
 
 """
@@ -276,7 +268,9 @@ def ad_address(mode, hit_id):
             address = 'https://ad.psiturk.org/complete/' + str(hit_address)
     else:
         raise ValueError("Unknown mode: {}".format(mode))
-    return Response(dumps({"address": address}), status=200)
+    return success_response(field="address",
+                            data=address,
+                            request_type="ad_address")
 
 
 @custom_code.route("/participant/<worker_id>/<hit_id>/<assignment_id>/<mode>", methods=["POST"])
@@ -299,10 +293,9 @@ def create_participant(worker_id, hit_id, assignment_id, mode):
     session_psiturk.commit()
 
     # return the data
-    data = participant.__json__()
-    data = {"status": "success", "participant": data}
-    js = dumps(data, default=date_handler)
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(field="participant",
+                            data=participant.__json__(),
+                            request_type="participant post")
 
 
 @custom_code.route("/participant/<participant_id>", methods=["GET"])
@@ -315,10 +308,9 @@ def get_participant(participant_id):
                               status=403)
 
     # return the data
-    data = participant.__json__()
-    data = {"status": "success", "participant": data}
-    js = dumps(data, default=date_handler)
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(field="participant",
+                            data=participant.__json__(),
+                            request_type="participant get")
 
 
 @custom_code.route("/question/<participant_id>", methods=["POST"])
@@ -350,9 +342,7 @@ def create_question(participant_id):
     session.commit()
 
     # return the data
-    data = {"status": "success"}
-    js = dumps(data, default=date_handler)
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(request_type="question post")
 
 
 @custom_code.route("/node/<int:node_id>/neighbors", methods=["GET"])
@@ -403,12 +393,9 @@ def node_neighbors(node_id):
     data = []
     for n in nodes:
         data.append(n.__json__())
-    data = {"status": "success", "nodes": data}
-    exp.log("/node/neighbors request successful.")
-    return Response(
-        dumps(data, default=date_handler),
-        status=200,
-        mimetype='application/json')
+    return success_response(field="nodes",
+                            data=data,
+                            request_type="neighbors")
 
 
 def error_response(error_type="Internal server error",
@@ -533,13 +520,9 @@ def node_vectors(node_id):
     data = []
     for v in vectors:
         data.append(v.__json__())
-    data = {
-        "status": "success",
-        "vectors": data
-    }
-    exp.log("/vector GET request successful.")
-    js = dumps(data, default=date_handler)
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(field="vectors",
+                            data=data,
+                            request_type="vector get")
 
 
 @custom_code.route("/node/<int:node_id>/connect/<int:other_node_id>", methods=["POST"])
@@ -582,10 +565,9 @@ def connect(node_id, other_node_id):
     data = []
     for v in vectors:
         data.append(v.__json__())
-    exp.log("/vector POST request successful")
-    data = {"status": "success", "vectors": data}
-    js = dumps(data, default=date_handler)
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(field="vectors",
+                            data=data,
+                            request_type="vector post")
 
 
 @custom_code.route("/info/<int:node_id>/<int:info_id>", methods=["GET"])
@@ -617,11 +599,9 @@ def get_info(node_id, info_id):
                               participant=node.participant)
 
     # return the data
-    data = info.__json__()
-    data = {"status": "success", "info": data}
-    exp.log("/info GET request successful.")
-    js = dumps(data, default=date_handler)
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(field="info",
+                            data=info.__json__(),
+                            request_type="info get")
 
 
 @custom_code.route("/node/<int:node_id>/infos", methods=["GET"])
@@ -657,12 +637,9 @@ def node_infos(node_id):
     data = []
     for i in infos:
         data.append(i.__json__())
-    data = {"status": "success", "infos": data}
-
-    # return the data
-    exp.log("/node/infos request successful.")
-    js = dumps(data, default=date_handler)
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(field="infos",
+                            data=data,
+                            request_type="infos")
 
 
 @custom_code.route("/node/<int:node_id>/received_infos", methods=["GET"])
@@ -698,12 +675,9 @@ def node_received_infos(node_id):
     data = []
     for i in infos:
         data.append(i.__json__())
-    data = {"status": "success", "infos": data}
-
-    # return the data
-    exp.log("/node/received_infos GET request successful.")
-    js = dumps(data, default=date_handler)
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(field="infos",
+                            data=data,
+                            request_type="received infos")
 
 
 @custom_code.route("/info/<int:node_id>", methods=["POST"])
@@ -739,11 +713,9 @@ def info_post(node_id):
                               participant=node.participant)
 
     # return the data
-    data = info.__json__()
-    data = {"status": "success", "info": data}
-    exp.log("/info POST request successful.")
-    js = dumps(data, default=date_handler)
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(field="info",
+                            data=info.__json__(),
+                            request_type="info post")
 
 
 @custom_code.route("/node/<int:node_id>/transmissions", methods=["GET"])
@@ -781,10 +753,9 @@ def node_transmissions(node_id):
     data = []
     for t in transmissions:
         data.append(t.__json__())
-    data = {"status": "success", "transmissions": data}
-    exp.log("/transmission GET request successful.")
-    js = dumps(data, default=date_handler)
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(field="transmissions",
+                            data=data,
+                            request_type="transmissions")
 
 
 @custom_code.route("/node/<int:node_id>/transmit", methods=["POST"])
@@ -878,10 +849,9 @@ def node_transmit(node_id):
     data = []
     for t in transmissions:
         data.append(t.__json__())
-    data = {"status": "success", "transmissions": data}
-    exp.log("/node/transmit request successful.")
-    js = dumps(data, default=date_handler)
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(field="transmissions",
+                            data=data,
+                            request_type="transmit")
 
 
 @custom_code.route("/node/<int:node_id>/transformations", methods=["GET"])
@@ -912,10 +882,9 @@ def transformation_get(node_id):
     data = []
     for t in transformations:
         data.append(t.__json__())
-    data = {"status": "success", "transformations": data}
-    js = dumps(data, default=date_handler)
-    exp.log("/transformation GET request successful.")
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(field="transformations",
+                            data=data,
+                            request_type="transformations")
 
 
 @custom_code.route("/transformation/<int:node_id>/<int:info_in_id>/<int:info_out_id>", methods=["POST"])
@@ -956,11 +925,9 @@ def transformation_post(node_id, info_in_id, info_out_id):
                               participant=node.participant)
 
     # return the data
-    data = transformation.__json__()
-    data = {"status": "success", "transformation": data}
-    exp.log("/transformation POST request successful.")
-    js = dumps(data, default=date_handler)
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(field="transformation",
+                            data=transformation.__json__(),
+                            request_type="transformation post")
 
 
 @custom_code.route("/notifications", methods=["POST", "GET"])
@@ -976,10 +943,7 @@ def api_notifications():
     db.logger.debug('rq: Submitted Queue Length: %d (%s)', len(q),
                     ', '.join(q.job_ids))
 
-    return Response(
-        dumps({"status": "success"}),
-        status=200,
-        mimetype='application/json')
+    return success_response(request_type="notification")
 
 
 def check_for_duplicate_assignments(participant):
