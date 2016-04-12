@@ -1401,9 +1401,9 @@ def error_page(participant=None, error_text=None, compensate=True,
         continue, sorry! If possible, please return the assignment so someone
         else can work on it."""
 
-        if compensate:
-            error_text += """Please use the information below to contact us
-            about compensation"""
+    if compensate:
+        error_text += """ Please use the information below to contact us
+        about compensation"""
 
     if participant is not None:
         hit_id = participant.hit_id,
