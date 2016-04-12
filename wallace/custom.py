@@ -180,30 +180,16 @@ def request_parameter(request, parameter, parameter_type=None, default=None,
 def assign_properties(thing, request):
     """Assign properties to an object.
 
-    When creating something via a post request (e.g. a node)
-    you can pass the properties of the object in the request.
-    This function gets those values from the request and fills
-    in the relevant columns of the table.
+    When creating something via a post request (e.g. a node), you can pass the
+    properties of the object in the request. This function gets those values
+    from the request and fills in the relevant columns of the table.
     """
-    properties = [
-        request_parameter(request=request, parameter="property1", optional=True),
-        request_parameter(request=request, parameter="property2", optional=True),
-        request_parameter(request=request, parameter="property3", optional=True),
-        request_parameter(request=request, parameter="property4", optional=True),
-        request_parameter(request=request, parameter="property5", optional=True)
-    ]
     for p in range(5):
-        if properties[p] is not None:
-            if p == 0:
-                thing.property1 = properties[p]
-            elif p == 1:
-                thing.property2 = properties[p]
-            elif p == 2:
-                thing.property3 = properties[p]
-            elif p == 3:
-                thing.property4 = properties[p]
-            else:
-                thing.property5 = properties[p]
+        property_name = "property" + str(p)
+        property = request_parameter(request=request, parameter=property_name, optional=True),
+        if property:
+            setattr(thing, property_name, property)
+
     session.commit()
 
 
