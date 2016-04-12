@@ -1184,50 +1184,6 @@ def transformation_post(node_id, info_in_id, info_out_id):
     return Response(js, status=200, mimetype='application/json')
 
 
-# @custom_code.route("/nudge", methods=["POST"])
-# def nudge():
-#     """Call the participant submission trigger for everyone who finished."""
-#     exp = experiment(session)
-
-#     exp.log("Nudging the experiment along.")
-
-#     # If a participant is hung at status 4, we must have missed the
-#     # notification saying they had submitted, so we bump them to status 100
-#     # and run the submission trigger.
-#     participants = models.Participant.query.filter_by(status="submitted").all()
-
-#     for participant in participants:
-
-#         exp.log("Nudging participant {}".format(participant))
-#         participant_id = participant.unique_id
-
-#         # Assign participant status 100.
-#         participant.status = 100
-#         session_psiturk.commit()
-
-#         # Recruit new participants.
-#         exp.participant_submission_trigger(
-#             participant_id=participant_id,
-#             assignment_id=participant.assignmentid)
-
-#     # If a participant has status 3, but has an endhit time, something must
-#     # have gone awry, so we bump the status to 100 and call it a day.
-#     participants = Participant.query.filter(
-#         and_(
-#             Participant.status == 3,
-#             Participant.endhit != None)).all()
-
-#     for participant in participants:
-#         exp.log("Bumping {} from status 3 (with endhit time) to 100.")
-#         participant.status = 100
-#         session_psiturk.commit()
-
-#     return Response(
-#         dumps({"status": "success"}),
-#         status=200,
-#         mimetype='application/json')
-
-
 @custom_code.route("/notifications", methods=["POST", "GET"])
 def api_notifications():
     """Receive MTurk REST notifications."""
