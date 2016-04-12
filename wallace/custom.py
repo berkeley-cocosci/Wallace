@@ -417,7 +417,7 @@ def error_response(error_type="Internal server error",
                    participant=None):
     """Returns a generic server error response."""
     traceback.print_exc()
-    exp.log("Error: {}.".format(error_type))
+    print("Error: {}.".format(error_type))
 
     page = error_page(
         error_text=error_text,
@@ -436,8 +436,8 @@ def success_response(field=None, data=None, request_type=""):
     data_out = {}
     data_out["status"] = "success"
     if field:
-    exp.log("{} request successful.".format(request_type))
         data_out[field] = data
+    print("{} request successful.".format(request_type))
     js = dumps(data_out, default=date_handler)
     return Response(js, status=200, mimetype='application/json')
 
