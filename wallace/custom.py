@@ -125,8 +125,9 @@ Routes for reading and writing to the database.
 """
 
 
-def request_parameter(request, parameter, parameter_type=None, default=None, optional=False):
-    """ Get a parameter from a request
+def request_parameter(request, parameter, parameter_type=None, default=None,
+                      optional=False):
+    """Get a parameter from a request.
 
     The request object itself must be passed.
     parameter is the name of the parameter you are looking for
@@ -135,8 +136,8 @@ def request_parameter(request, parameter, parameter_type=None, default=None, opt
 
     If the parameter is not found and no default is specified,
     or if the parameter is found but is of the wrong type
-    then a Response object is returned"""
-
+    then a Response object is returned
+    """
     exp = experiment(session)
 
     # get the parameter
@@ -185,10 +186,13 @@ def request_parameter(request, parameter, parameter_type=None, default=None, opt
 
 
 def assign_properties(thing, request):
-    """ When creating something via a post request (e.g. a node)
+    """Assign properties to an object.
+
+    When creating something via a post request (e.g. a node)
     you can pass the properties of the object in the request.
     This function gets those values from the request and fills
-    in the relevant columns of the table. """
+    in the relevant columns of the table.
+    """
     properties = [
         request_parameter(request=request, parameter="property1", optional=True),
         request_parameter(request=request, parameter="property2", optional=True),
@@ -212,6 +216,7 @@ def assign_properties(thing, request):
 
 
 def return_page(page, request):
+    """Return a rendered template."""
     try:
         hit_id = request.args['hit_id']
         assignment_id = request.args['assignment_id']
@@ -237,6 +242,7 @@ def return_page(page, request):
 
 @custom_code.route("/<page>", methods=["GET"])
 def get_page(page):
+    """Return the requested page."""
     return return_page(page + '.html', request)
 
 
@@ -317,8 +323,7 @@ def get_participant(participant_id):
 
 @custom_code.route("/question/<participant_id>", methods=["POST"])
 def create_question(participant_id):
-    """ Send a POST request to the question table.
-    """
+    """Send a POST request to the question table."""
 
     # Get the participant.
     try:
@@ -352,7 +357,7 @@ def create_question(participant_id):
 
 @custom_code.route("/node/<int:node_id>/neighbors", methods=["GET"])
 def node_neighbors(node_id):
-    """ Send a GET request to the node table.
+    """Send a GET request to the node table.
 
     This calls the neighbours method of the node
     making the request and returns a list of descriptions of
@@ -410,7 +415,7 @@ def error_response(error_type="Internal server error",
                    error_text=None,
                    status=400,
                    participant=None):
-    """ Returns a generic server error response. """
+    """Returns a generic server error response."""
     traceback.print_exc()
     exp.log("Error: {}.".format(error_type))
 
@@ -439,7 +444,7 @@ def success_response(field=None, data=None, request_type=""):
 
 @custom_code.route("/node/<participant_id>", methods=["POST"])
 def create_node(participant_id):
-    """ Send a POST request to the node table.
+    """Send a POST request to the node table.
 
     This makes a new node for the participant, it calls:
         1. exp.get_network_for_participant
@@ -784,7 +789,7 @@ def node_transmissions(node_id):
 
 @custom_code.route("/node/<int:node_id>/transmit", methods=["POST"])
 def node_transmit(node_id):
-    """ The /node/<id>/transmit route allows the front end to
+    """The /node/<id>/transmit route allows the front end to
     request that a node transmit to other nodes.
 
     As with node.transmit() the key parameters are what and to_whom.
