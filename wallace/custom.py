@@ -492,20 +492,22 @@ def node_neighbors(node_id):
 
 def error_response(error_type="Internal server error",
                    error_text=None,
-                   status=400):
+                   status=400,
+                   participant=None):
     """ Returns a generic server error response. """
     traceback.print_exc()
     exp.log("Error: {}.".format(error_type))
 
     page = error_page(
         error_text=error_text,
-        error_type=error_type)
+        error_type=error_type,
+        participant=participant)
 
     data = {
         "status": "error",
         "html": page
     }
-    return Response(dumps(data), status=403, mimetype='application/json')
+    return Response(dumps(data), status=status, mimetype='application/json')
 
 
 @custom_code.route("/node/<participant_id>", methods=["POST"])
