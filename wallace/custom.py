@@ -533,15 +533,16 @@ def node_neighbors(node_id):
         mimetype='application/json')
 
 
-def error_response(request_type="Internal",
-                   error_text="You cannot continue because our server has crashed."):
+def error_response(error_type="Internal server error",
+                   error_text=None,
+                   status=400):
     """ Returns a generic server error response. """
     traceback.print_exc()
-    exp.log("Error: {} server error.".format(request_type))
+    exp.log("Error: {}.".format(error_type))
 
     page = error_page(
         error_text=error_text,
-        error_type="{} server error".format(request_type))
+        error_type=error_type)
 
     data = {
         "status": "error",
