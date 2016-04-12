@@ -120,44 +120,6 @@ def summary():
     return Response(dumps(data), status=200, mimetype='application/json')
 
 
-# @custom_code.route('/worker_complete', methods=['GET'])
-# def worker_complete():
-#     """Overide the psiTurk worker_complete route.
-
-#     This skirts around an issue where the participant's status reverts to 3
-#     because of rogue calls to this route. It does this by changing the status
-#     only if it's not already >= 100.
-#     """
-#     exp = experiment(session)
-
-#     if 'uniqueId' not in request.args:
-#         data = {"status": "bad request"}
-#         return jsonify(**data)
-
-#     else:
-#         unique_id = request.args['uniqueId']
-#         exp.log("Completed experiment %s" % unique_id)
-#         try:
-#             user = Participant.query.\
-#                 filter(Participant.uniqueid == unique_id).one()
-
-#             if user.status < 100:
-#                 user.status = 3
-#                 user.endhit = datetime.datetime.now()
-#                 session_psiturk.add(user)
-#                 session_psiturk.commit()
-
-#             status = "success"
-
-#         except exc.SQLAlchemyError:
-#             status = "database error"
-
-#         data = {
-#             "status": status
-#         }
-#         return jsonify(**data)
-
-
 """
 Routes for reading and writing to the database.
 """
