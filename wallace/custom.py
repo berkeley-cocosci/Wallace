@@ -70,7 +70,7 @@ except ImportError:
 
 @custom_code.teardown_request
 def shutdown_session(_=None):
-    ''' Rollback and close session at request end '''
+    """Rollback and close session at request end."""
     session.remove()
     db.logger.debug('Closing Wallace DB session at flask request end')
 
