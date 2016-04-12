@@ -947,11 +947,10 @@ def node_transmissions(node_id):
     # execute the request
     transmissions = node.transmissions(direction=direction, status=status)
 
-    if direction in ["incoming", "all"] and status in ["pending", "all"]:
-        node.receive()
-        session.commit()
-
     try:
+        if direction in ["incoming", "all"] and status in ["pending", "all"]:
+            node.receive()
+            session.commit()
         # ping the experiment
         exp.transmission_get_request(node=node, transmissions=transmissions)
         session.commit()
