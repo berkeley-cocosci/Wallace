@@ -150,15 +150,7 @@ def request_parameter(request, parameter, parameter_type=None, default=None, opt
             return None
         else:
             msg = "{} {} request, {} not specified".format(request.url, request.method, parameter)
-            exp.log("Error: {}".format(msg))
-            data = {
-                "status": "error",
-                "html": error_page(error_type=msg)
-            }
-            return Response(
-                dumps(data),
-                status=400,
-                mimetype='application/json')
+            return error_response(error_type=msg)
 
     # check the parameter type
     if parameter_type is None:
@@ -171,15 +163,7 @@ def request_parameter(request, parameter, parameter_type=None, default=None, opt
             return value
         except ValueError:
             msg = "{} {} request, non-numeric {}: {}".format(request.url, request.method, parameter, value)
-            exp.log("Error: {}".format(msg))
-            data = {
-                "status": "error",
-                "html": error_page(error_type=msg)
-            }
-            return Response(
-                dumps(data),
-                status=400,
-                mimetype='application/json')
+            return error_response(error_type=msg)
     elif parameter_type == "known_class":
         # if its a known class check against the known classes
         try:
@@ -187,41 +171,17 @@ def request_parameter(request, parameter, parameter_type=None, default=None, opt
             return value
         except KeyError:
             msg = "{} {} request, unknown_class: {} for parameter {}".format(request.url, request.method, value, parameter)
-            exp.log("Error: {}".format(msg))
-            data = {
-                "status": "error",
-                "html": error_page(error_type=msg)
-            }
-            return Response(
-                dumps(data),
-                status=400,
-                mimetype='application/json')
+            return error_response(error_type=msg)
     elif parameter_type == "bool":
         # if its a boolean, convert to a boolean
         if value in ["True", "False"]:
             return value == "True"
         else:
             msg = "{} {} request, non-boolean {}: {}".format(request.url, request.method, parameter, value)
-            exp.log("Error: {}".format(msg))
-            data = {
-                "status": "error",
-                "html": error_page(error_type=msg)
-            }
-            return Response(
-                dumps(data),
-                status=400,
-                mimetype='application/json')
+            return error_response(error_type=msg)
     else:
         msg = "/{} {} request, unknown parameter type: {} for parameter {}".format(request.url, request.method, parameter_type, parameter)
-        exp.log("Error: {}".format(msg))
-        data = {
-            "status": "error",
-            "html": error_page(error_type=msg)
-        }
-        return Response(
-            dumps(data),
-            status=400,
-            mimetype='application/json')
+        return error_response(error_type=msg)
 
 
 def assign_properties(thing, request):
@@ -272,8 +232,7 @@ def return_page(page, request):
                 participant_id=participant_id
             )
         except:
-            traceback.print_exc()
-            return error_page(error_type="{} args missing".format(page))
+            return error_response(error_type="{} args missing".format(page))
 
 
 @custom_code.route("/<page>", methods=["GET"])
@@ -346,14 +305,8 @@ def get_participant(participant_id):
     try:
         participant = models.Participant.query.filter_by(id=participant_id).one()
     except NoResultFound:
-        traceback.print_exc()
-        exp.log("Error: /participant GET request for unrecognized participant_id {}.".format(participant_id))
-        page = error_page(error_type="/participant GET: no participant found")
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(dumps(data), status=403, mimetype='application/json')
+        return error_response(error_type="/participant GET: no participant found",
+                              status=403)
 
     # return the data
     data = participant.__json__()
@@ -366,54 +319,19 @@ def get_participant(participant_id):
 def create_question(participant_id):
     """ Send a POST request to the question table.
     """
-    exp = experiment(session)
 
     # Get the participant.
     try:
         participant = models.Participant.query.filter_by(id=participant_id).one()
     except NoResultFound:
-        traceback.print_exc()
-        exp.log("Error: /question POST request from unrecognized participant_id {}.".format(participant_id))
-        page = error_page(
-            error_text="You cannot continue because your worker id does not match anyone in our records.",
-            error_type="/question POST no participant found")
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(dumps(data), status=403, mimetype='application/json')
+        return error_response(error_type="/question POST no participant found",
+                              status=403)
 
     # Make sure the participant status is "working"
     if participant.status != "working":
-
-        exp.log("Error: Participant status is {}, they should not have been able to contact this route.".format(participant.status))
         error_type = "/question POST, status = {}".format(participant.status)
-
-        if participant.status in ["submitted", "approved", "rejected"]:
-            error_text = "You cannot continue because we have received a notification from AWS that you have already submitted the assignment.'"
-
-        elif participant.status == "returned":
-            error_text = "You cannot continue because we have received a notification from AWS that you have returned the assignment.'"
-
-        elif participant.status == "abandoned":
-            error_text = "You cannot continue because we have received a notification from AWS that your assignment has expired."
-
-        else:
-            error_text = None
-
-        page = error_page(
-            participant=participant,
-            error_text=error_text,
-            error_type=error_type)
-
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(
-            dumps(data),
-            status=400,
-            mimetype='application/json')
+        return error_response(error_type=error_type,
+                              participant=participant)
 
     question = request_parameter(request=request, parameter="question")
     response = request_parameter(request=request, parameter="response")
@@ -458,10 +376,8 @@ def node_neighbors(node_id):
     # make sure the node exists
     node = models.Node.query.get(node_id)
     if node is None:
-        exp.log("Error: /node/{}/neighbors, node {} does not exist".format(node_id))
-        page = error_page(error_type="/node/neighbors, node does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/node/neighbors, node does not exist",
+                              error_text="/node/{}/neighbors, node {} does not exist".format(node_id))
 
     # get its neighbors
     nodes = node.neighbours(
@@ -476,7 +392,7 @@ def node_neighbors(node_id):
             nodes=nodes)
         session.commit()
     except:
-        return error_response(request_type="/node/neighbors request")
+        return error_response(error_type="exp.node_get_request")
 
     # return the data
     data = []
@@ -526,59 +442,23 @@ def create_node(participant_id):
     try:
         participant = models.Participant.query.filter_by(id=participant_id).one()
     except NoResultFound:
-        traceback.print_exc()
-        exp.log("Error: /node POST request from unrecognized participant_id {}.".format(participant_id))
-        page = error_page(
-            error_text="You cannot continue because your worker id does not match anyone in our records.",
-            error_type="/node POST no participant found")
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(dumps(data), status=403, mimetype='application/json')
+        return error_response(error_type="/node POST no participant found",
+                              status=403)
 
     # replace any duplicate assignments
     check_for_duplicate_assignments(participant)
 
     # Make sure the participant status is working
     if participant.status != "working":
-
-        exp.log("Error: Participant status is {}, they should not have been able to contact this route.".format(participant.status))
         error_type = "/node POST, status = {}".format(participant.status)
-
-        if participant.status in ["submitted", "approved", "rejected"]:
-            error_text = "You cannot continue because we have received a notification from AWS that you have already submitted the assignment.'"
-
-        elif participant.status == "returned":
-            error_text = "You cannot continue because we have received a notification from AWS that you have returned the assignment.'"
-
-        elif participant.status == "abandoned":
-            error_text = "You cannot continue because we have received a notification from AWS that your assignment has expired."
-
-        else:
-            error_text = None
-
-        page = error_page(
-            participant=participant,
-            error_text=error_text,
-            error_type=error_type)
-
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(
-            dumps(data),
-            status=400,
-            mimetype='application/json')
+        return error_response(error_type=error_type,
+                              participant=participant)
 
     try:
         # execute the request
-        exp.log("/node POST request. Params: participant_id: {}".format(participant_id))
         network = exp.get_network_for_participant(participant_id=participant_id)
 
         if network is None:
-            exp.log("No networks available for participant.")
             return Response(dumps({"status": "error"}), status=403)
 
         node = exp.make_node_for_participant(
@@ -597,16 +477,9 @@ def create_node(participant_id):
         exp.node_post_request(participant=participant, node=node)
         session.commit()
     except:
-        traceback.print_exc()
-        exp.log("Error: /node POST request server error.")
-        page = error_page(
-            error_text="You cannot continue because our server has crashed.",
-            error_type="/node POST server error")
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(dumps(data), status=403, mimetype='application/json')
+        return error_response(error_type="/node POST server error",
+                              status=403,
+                              participant=participant)
 
     # return the data
     data = node.__json__()
@@ -630,10 +503,7 @@ def node_vectors(node_id):
     # execute the request
     node = models.Node.query.get(node_id)
     if node is None:
-        exp.log("Error: /node/{}/vectors, node {} does not exist".format(node_id))
-        page = error_page(error_type="/node/vectors, node does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/node/vectors, node does not exist")
 
     try:
         vectors = node.vectors(direction=direction, failed=failed)
@@ -642,16 +512,9 @@ def node_vectors(node_id):
         exp.vector_get_request(node=node, vectors=vectors)
         session.commit()
     except:
-        traceback.print_exc()
-        exp.log("Error: /node/vectors GET request server error.")
-        page = error_page(
-            error_text="You cannot continue because our server has crashed.",
-            error_type="/node/vectors GET server error")
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(dumps(data), status=403, mimetype='application/json')
+        return error_response(error_type="/node/vectors GET server error",
+                              status=403,
+                              participant=node.participant)
 
     # return the data
     data = []
@@ -678,17 +541,12 @@ def connect(node_id, other_node_id):
     # check the nodes exist
     node = models.Node.query.get(node_id)
     if node is None:
-        exp.log("Error: /node/{}/connect, node {} does not exist".format(node_id, node_id))
-        page = error_page(error_type="/node/connect, node does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/node/connect, node does not exist")
 
     other_node = models.Node.query.get(other_node_id)
     if other_node is None:
-        exp.log("Error: /node/{}/connect, other_node {} does not exist".format(node_id, other_node_id))
-        page = error_page(error_type="/node/connect, other node does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/node/connect, other node does not exist",
+                              participant=node.participant)
 
     # execute the request
     try:
@@ -703,16 +561,9 @@ def connect(node_id, other_node_id):
 
         session.commit()
     except:
-        traceback.print_exc()
-        exp.log("Error: /vector POST request server error.")
-        page = error_page(
-            error_text="You cannot continue because our server has crashed.",
-            error_type="/vector POST server error")
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(dumps(data), status=403, mimetype='application/json')
+        return error_response(error_type="/vector POST server error",
+                              status=403,
+                              participant=node.participant)
 
     # return the data
     data = []
@@ -731,39 +582,26 @@ def get_info(node_id, info_id):
     # check the node exists
     node = models.Node.query.get(node_id)
     if node is None:
-        exp.log("Error: /info/{}, node {} does not exist".format(node_id, node_id))
-        page = error_page(error_type="/info, node does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/info, node does not exist")
 
     # execute the experiment method:
     info = models.Info.query.get(info_id)
     if info is None:
-        exp.log("Error: /info GET request, info {} does not exist".format(info_id))
-        page = error_page(error_type="/info GET, info does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/info GET, info does not exist",
+                              participant=node.participant)
     elif info.origin_id != node.id and info.id not in [t.info_id for t in node.transmissions(direction="incoming", status="received")]:
-        exp.log("Error: /info GET request, info not available to requesting node")
-        page = error_page(error_type="/info GET, forbidden info")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=403, mimetype='application/json')
+        return error_response(error_type="/info GET, forbidden info",
+                              status=403,
+                              participant=node.participant)
 
     try:
         # ping the experiment
         exp.info_get_request(node=node, info=info)
         session.commit()
     except:
-        traceback.print_exc()
-        exp.log("Error: /info GET request server error.")
-        page = error_page(
-            error_text="You cannot continue because our server has crashed.",
-            error_type="/info GET server error")
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(dumps(data), status=403, mimetype='application/json')
+        return error_response(error_type="/info GET server error",
+                              status=403,
+                              participant=node.participant)
 
     # return the data
     data = info.__json__()
@@ -785,10 +623,7 @@ def node_infos(node_id):
     # check the node exists
     node = models.Node.query.get(node_id)
     if node is None:
-        exp.log("Error: /node/{}/infos, node does not exist".format(node_id))
-        page = error_page(error_type="/node/infos, node does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/node/infos, node does not exist")
 
     try:
         # execute the request:
@@ -801,16 +636,9 @@ def node_infos(node_id):
 
         session.commit()
     except:
-        traceback.print_exc()
-        exp.log("Error: /node/infos GET request server error.")
-        page = error_page(
-            error_text="You cannot continue because our server has crashed.",
-            error_type="/node/infos GET server error")
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(dumps(data), status=403, mimetype='application/json')
+        return error_response(error_type="/node/infos GET server error",
+                              status=403,
+                              participant=node.participant)
 
     # parse the data for returning
     data = []
@@ -836,10 +664,7 @@ def node_received_infos(node_id):
     # check the node exists
     node = models.Node.query.get(node_id)
     if node is None:
-        exp.log("Error: /node/{}/infos, node does not exist".format(node_id))
-        page = error_page(error_type="/node/infos, node does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/node/infos, node does not exist")
 
     # execute the request:
     infos = node.received_infos(type=info_type)
@@ -852,16 +677,9 @@ def node_received_infos(node_id):
 
         session.commit()
     except:
-        traceback.print_exc()
-        exp.log("Error: /node/received_infos GET request server error.")
-        page = error_page(
-            error_text="You cannot continue because our server has crashed.",
-            error_type="/node/received_infos GET server error")
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(dumps(data), status=403, mimetype='application/json')
+        return error_response(error_type="info_get_request error",
+                              status=403,
+                              participant=node.participant)
 
     # parse the data for returning
     data = []
@@ -889,10 +707,7 @@ def info_post(node_id):
     # check the node exists
     node = models.Node.query.get(node_id)
     if node is None:
-        exp.log("Error: /info/{} POST, node does not exist".format(node_id))
-        page = error_page(error_type="/info POST, node does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/info POST, node does not exist")
 
     try:
         # execute the request
@@ -906,16 +721,9 @@ def info_post(node_id):
 
         session.commit()
     except:
-        traceback.print_exc()
-        exp.log("Error: /info POST request server error.")
-        page = error_page(
-            error_text="You cannot continue because our server has crashed.",
-            error_type="/info POST server error")
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(dumps(data), status=403, mimetype='application/json')
+        return error_response(error_type="/info POST server error",
+                              status=403,
+                              participant=node.participant)
 
     # return the data
     data = info.__json__()
@@ -939,10 +747,7 @@ def node_transmissions(node_id):
     # check the node exists
     node = models.Node.query.get(node_id)
     if node is None:
-        exp.log("Error: /node/{}/transmissions, node does not exist".format(node_id))
-        page = error_page(error_type="/node/transmissions, node does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/node/transmissions, node does not exist")
 
     # execute the request
     transmissions = node.transmissions(direction=direction, status=status)
@@ -955,16 +760,9 @@ def node_transmissions(node_id):
         exp.transmission_get_request(node=node, transmissions=transmissions)
         session.commit()
     except:
-        traceback.print_exc()
-        exp.log("Error: /node/transmissions GET request server error.")
-        page = error_page(
-            error_text="You cannot continue because our server has crashed.",
-            error_type="/node/transmissions GET server error")
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(dumps(data), status=403, mimetype='application/json')
+        return error_response(error_type="/node/transmissions GET server error",
+                              status=403,
+                              participant=node.participant)
 
     # return the data
     data = []
@@ -1016,10 +814,7 @@ def node_transmit(node_id):
     # check the node exists
     node = models.Node.query.get(node_id)
     if node is None:
-        exp.log("Error: /node/{}/transmit, node does not exist".format(node_id))
-        page = error_page(error_type="/node/transmit, node does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/node/transmit, node does not exist")
 
     # create what
     if what is not None:
@@ -1027,19 +822,14 @@ def node_transmit(node_id):
             what = int(what)
             what = models.Info.get(what)
             if what is None:
-                exp.log("Error: /node/transmit POST request, info {} does not exist".format(int(request_parameter(request=request, parameter="what", optional=True))))
-                page = error_page(error_type="/node/transmit POST, info does not exist")
-                js = dumps({"status": "error", "html": page})
-                return Response(js, status=400, mimetype='application/json')
+                return error_response(error_type="/node/transmit POST, info does not exist",
+                                      participant=node.participant)
         except:
             try:
                 what = exp.known_classes[what]
             except:
-                traceback.print_exc()
-                exp.log("Error: /node/transmit POST request, bad what: {}".format(request_parameter(request=request, parameter="what", optional=True)))
-                page = error_page(error_type="/node/transmit POST, info does not exist")
-                js = dumps({"status": "error", "html": page})
-                return Response(js, status=400, mimetype='application/json')
+                return error_response(error_type="/node/transmit POST, info does not exist",
+                                      participant=node.participant)
 
     # create to_whom
     if to_whom is not None:
@@ -1047,19 +837,14 @@ def node_transmit(node_id):
             to_whom = int(to_whom)
             to_whom = models.Node.get(to_whom)
             if what is None:
-                exp.log("Error: /node/transmit POST request, info {} does not exist".format(int(request_parameter(request=request, parameter="to_whom", optional=True))))
-                page = error_page(error_type="/node/transmit POST, info does not exist")
-                js = dumps({"status": "error", "html": page})
-                return Response(js, status=400, mimetype='application/json')
+                return error_response(error_type="/node/transmit POST, info does not exist",
+                                      participant=node.participant)
         except:
             try:
                 to_whom = exp.known_classes[to_whom]
             except:
-                traceback.print_exc()
-                exp.log("Error: /node/transmit POST request, bad to_whom: {}".format(request_parameter(request=request, parameter="to_whom", optional=True)))
-                page = error_page(error_type="/node/transmit POST, info does not exist")
-                js = dumps({"status": "error", "html": page})
-                return Response(js, status=400, mimetype='application/json')
+                return error_response(error_type="/node/transmit POST, info does not exist",
+                                      participant=node.participant)
 
     # execute the request
     try:
@@ -1073,11 +858,8 @@ def node_transmit(node_id):
             transmissions=transmissions)
         session.commit()
     except:
-        traceback.print_exc()
-        exp.log("Error: /node/transmit POST request, transmit failed")
-        page = error_page(error_type="/node/transmit POST, transmit failed")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/node/transmit POST, server error",
+                              participant=node.participant)
 
     # return the data
     data = []
@@ -1101,10 +883,7 @@ def transformation_get(node_id):
     # check the node exists
     node = models.Node.query.get(node_id)
     if node is None:
-        exp.log("Error: /node/{}/transformations node does not exist".format(node_id))
-        page = error_page(error_type="/node/transformations, node does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/node/transformations, node does not exist")
 
     # execute the request
     transformations = node.transformations(transformation_type=transformation_type)
@@ -1113,11 +892,8 @@ def transformation_get(node_id):
         exp.transformation_get_request(node=node, transformations=transformations)
         session.commit()
     except:
-        traceback.print_exc()
-        exp.log("Error: /node/transformations GET request failed")
-        page = error_page(error_type="/node/tranaformations GET failed")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/node/tranaformations GET failed",
+                              participant=node.participant)
 
     # return the data
     data = []
@@ -1141,24 +917,17 @@ def transformation_post(node_id, info_in_id, info_out_id):
     # check the node etc exists
     node = models.Node.query.get(node_id)
     if node is None:
-        exp.log("Error: /transformation/ POST, node {} does not exist".format(node_id))
-        page = error_page(error_type="/transformation POST, node does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/transformation POST, node does not exist")
 
     info_in = models.Info.query.get(info_in_id)
     if info_in is None:
-        exp.log("Error: /transformation/ POST, info_in {} does not exist".format(info_in_id))
-        page = error_page(error_type="/transformation POST, info_in does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/transformation POST, info_in does not exist",
+                              participant=node.participant)
 
     info_out = models.Info.query.get(info_out_id)
     if info_out is None:
-        exp.log("Error: /transformation/ POST, info_out {} does not exist".format(info_out_id))
-        page = error_page(error_type="/transformation POST, info_out does not exist")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/transformation POST, info_out does not exist",
+                              participant=node.participant)
 
     try:
         # execute the request
@@ -1170,11 +939,8 @@ def transformation_post(node_id, info_in_id, info_out_id):
         exp.transformation_post_request(node=node, transformation=transformation)
         session.commit()
     except:
-        traceback.print_exc()
-        exp.log("Error: /transformation POST request failed")
-        page = error_page(error_type="/tranaformation POST failed")
-        js = dumps({"status": "error", "html": page})
-        return Response(js, status=400, mimetype='application/json')
+        return error_response(error_type="/tranaformation POST failed",
+                              participant=node.participant)
 
     # return the data
     data = transformation.__json__()
