@@ -426,6 +426,17 @@ def error_response(error_type="Internal server error",
     return Response(dumps(data), status=status, mimetype='application/json')
 
 
+def success_response(field=None, data=None, request_type=""):
+    """Return a generic success response."""
+    data = {}
+    data["status"] = "success"
+    if field:
+        data[field] = data
+    exp.log("{} request successful.".format(request_type))
+    js = dumps(data, default=date_handler)
+    return Response(js, status=200, mimetype='application/json')
+
+
 @custom_code.route("/node/<participant_id>", methods=["POST"])
 def create_node(participant_id):
     """ Send a POST request to the node table.
@@ -482,11 +493,8 @@ def create_node(participant_id):
                               participant=participant)
 
     # return the data
-    data = node.__json__()
-    data = {"status": "success", "node": data}
-    exp.log("/node POST request successful.")
-    js = dumps(data, default=date_handler)
-    return Response(js, status=200, mimetype='application/json')
+    return success_response(
+        field="node", data=node.__json__(), request_type="/node POST")
 
 
 @custom_code.route("/node/<int:node_id>/vectors", methods=["GET"])
