@@ -433,12 +433,12 @@ def error_response(error_type="Internal server error",
 
 def success_response(field=None, data=None, request_type=""):
     """Return a generic success response."""
-    data = {}
-    data["status"] = "success"
+    data_out = {}
+    data_out["status"] = "success"
     if field:
-        data[field] = data
     exp.log("{} request successful.".format(request_type))
-    js = dumps(data, default=date_handler)
+        data_out[field] = data
+    js = dumps(data_out, default=date_handler)
     return Response(js, status=200, mimetype='application/json')
 
 
