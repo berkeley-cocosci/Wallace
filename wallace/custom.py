@@ -557,7 +557,7 @@ def node_neighbors(node_id):
             nodes=nodes)
         session.commit()
     except:
-        return throw_error(request_type="/node/neighbors request")
+        return error_response(request_type="/node/neighbors request")
 
     # return the data
     data = []
@@ -571,8 +571,8 @@ def node_neighbors(node_id):
         mimetype='application/json')
 
 
-def throw_error(request_type="Internal",
-                error_text="You cannot continue because our server has crashed."):
+def error_response(request_type="Internal",
+                   error_text="You cannot continue because our server has crashed."):
     """ Returns a generic server error response. """
     traceback.print_exc()
     exp.log("Error: {} server error.".format(request_type))
