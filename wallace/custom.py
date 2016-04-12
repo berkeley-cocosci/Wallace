@@ -557,16 +557,7 @@ def node_neighbors(node_id):
             nodes=nodes)
         session.commit()
     except:
-        traceback.print_exc()
-        exp.log("Error: /node/neighbors request server error.")
-        page = error_page(
-            participant=node.participant,
-            error_type="/node/neighbors server error")
-        data = {
-            "status": "error",
-            "html": page
-        }
-        return Response(dumps(data), status=403, mimetype='application/json')
+        return throw_error(request_type="/node/neighbors request")
 
     # return the data
     data = []
@@ -578,6 +569,29 @@ def node_neighbors(node_id):
         dumps(data, default=date_handler),
         status=200,
         mimetype='application/json')
+
+
+def throw_error(request_type=None, error_text=None):
+    """Log an error, etc."""
+    traceback.print_exc()
+
+    if request_type is None:
+        request_type = "Internal"
+
+    if error_text is None:
+        error_text = "You cannot continue because our server has crashed."
+
+    exp.log("Error: {} server error.".format(request_type))
+
+    page = error_page(
+        error_text=error_text,
+        error_type="{} server error".format(request_type))
+
+    data = {
+        "status": "error",
+        "html": page
+    }
+    return Response(dumps(data), status=403, mimetype='application/json')
 
 
 @custom_code.route("/node/<participant_id>", methods=["POST"])
