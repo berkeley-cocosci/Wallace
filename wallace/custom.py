@@ -117,7 +117,7 @@ Routes for reading and writing to the database.
 """
 
 
-def request_parameter(request, parameter, parameter_type=None, default=None,
+def request_parameter(parameter, parameter_type=None, default=None,
                       optional=False):
     """Get a parameter from a request.
 
@@ -186,7 +186,7 @@ def assign_properties(thing, request):
     """
     for p in range(5):
         property_name = "property" + str(p)
-        property = request_parameter(request=request, parameter=property_name, optional=True),
+        property = request_parameter(parameter=property_name, optional=True),
         if property:
             setattr(thing, property_name, property)
 
@@ -316,9 +316,9 @@ def create_question(participant_id):
         return error_response(error_type=error_type,
                               participant=participant)
 
-    question = request_parameter(request=request, parameter="question")
-    response = request_parameter(request=request, parameter="response")
-    question_id = request_parameter(request=request, parameter="question_id", parameter_type="int")
+    question = request_parameter(parameter="question")
+    response = request_parameter(parameter="response")
+    question_id = request_parameter(parameter="question_id", parameter_type="int")
     for x in [question, response, question_id]:
         if type(x) == Response:
             return x
@@ -347,9 +347,9 @@ def node_neighbors(node_id):
     exp = experiment(session)
 
     # get the parameters
-    node_type = request_parameter(request=request, parameter="node_type", parameter_type="known_class", default=models.Node)
-    failed = request_parameter(request=request, parameter="failed", parameter_type="bool", default=False)
-    connection = request_parameter(request=request, parameter="connection", default="to")
+    node_type = request_parameter(parameter="node_type", parameter_type="known_class", default=models.Node)
+    failed = request_parameter(parameter="failed", parameter_type="bool", default=False)
+    connection = request_parameter(parameter="connection", default="to")
     for x in [node_type, failed, connection]:
         if type(x) == Response:
             return x
@@ -480,8 +480,8 @@ def node_vectors(node_id):
     exp = experiment(session)
 
     # get the parameters
-    direction = request_parameter(request=request, parameter="direction", default="all")
-    failed = request_parameter(request=request, parameter="failed", parameter_type="bool", default=False)
+    direction = request_parameter(parameter="direction", default="all")
+    failed = request_parameter(parameter="failed", parameter_type="bool", default=False)
     for x in [direction, failed]:
         if type(x) == Response:
             return x
@@ -516,7 +516,7 @@ def connect(node_id, other_node_id):
     exp = experiment(session)
 
     # get the parameters
-    direction = request_parameter(request=request, parameter="direction", default="to")
+    direction = request_parameter(parameter="direction", default="to")
     if type(direction == Response):
         return direction
 
@@ -595,7 +595,7 @@ def node_infos(node_id):
     exp = experiment(session)
 
     # get the parameters
-    info_type = request_parameter(request=request, parameter="info_type", parameter_type="known_class", default=models.Info)
+    info_type = request_parameter(parameter="info_type", parameter_type="known_class", default=models.Info)
     if type(info_type) == Response:
         return info_type
 
@@ -633,7 +633,7 @@ def node_received_infos(node_id):
     exp = experiment(session)
 
     # get the parameters
-    info_type = request_parameter(request=request, parameter="info_type", parameter_type="known_class", default=models.Info)
+    info_type = request_parameter(parameter="info_type", parameter_type="known_class", default=models.Info)
     if type(info_type) == Response:
         return info_type
 
@@ -671,8 +671,8 @@ def info_post(node_id):
     exp = experiment(session)
 
     # get the parameters
-    info_type = request_parameter(request=request, parameter="info_type", parameter_type="known_class", default=models.Info)
-    contents = request_parameter(request=request, parameter="contents")
+    info_type = request_parameter(parameter="info_type", parameter_type="known_class", default=models.Info)
+    contents = request_parameter(parameter="contents")
     for x in [info_type, contents]:
         if type(x) == Response:
             return x
@@ -709,8 +709,8 @@ def node_transmissions(node_id):
     exp = experiment(session)
 
     # get the parameters
-    direction = request_parameter(request=request, parameter="direction", default="to")
-    status = request_parameter(request=request, parameter="status", default="all")
+    direction = request_parameter(parameter="direction", default="to")
+    status = request_parameter(parameter="status", default="all")
     for x in [direction, status]:
         if type(x) == Response:
             return x
@@ -778,8 +778,8 @@ def node_transmit(node_id):
 
     exp = experiment(session)
 
-    what = request_parameter(request=request, parameter="what", optional=True)
-    to_whom = request_parameter(request=request, parameter="to_whom", optional=True)
+    what = request_parameter(parameter="what", optional=True)
+    to_whom = request_parameter(parameter="to_whom", optional=True)
 
     # check the node exists
     node = models.Node.query.get(node_id)
@@ -845,7 +845,7 @@ def transformation_get(node_id):
     exp = experiment(session)
 
     # get the parameters
-    transformation_type = request_parameter(request=request, parameter="transformation_type", parameter_type="known_class", default=models.Transformation)
+    transformation_type = request_parameter(parameter="transformation_type", parameter_type="known_class", default=models.Transformation)
     if type(transformation_type) == Response:
         return transformation_type
 
@@ -878,7 +878,7 @@ def transformation_post(node_id, info_in_id, info_out_id):
     exp = experiment(session)
 
     #get the parameters
-    transformation_type = request_parameter(request=request, parameter="transformation_type", parameter_type="known_class", default=models.Transformation)
+    transformation_type = request_parameter(parameter="transformation_type", parameter_type="known_class", default=models.Transformation)
     if type(transformation_type) == Response:
         return transformation_type
 
