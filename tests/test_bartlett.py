@@ -1,6 +1,7 @@
 """Integration tests for Bartlett1932."""
 
-import subprocess
+import os
+import subprocess as sp
 import re
 import requests
 import threading
@@ -11,9 +12,14 @@ class TestBartlett(object):
 
     def setup(self):
         """Launch the experiment in the sandbox."""
-        sandbox_output = subprocess.check_output(
-            "cd examples/bartlett1932; wallace sandbox",
-            shell=True)
+        path = os.path.dirname(os.path.realpath(__file__))
+
+        demo_path = os.path.join(
+            os.path.dirname(path),
+            "examples",
+            "bartlett1932")
+
+        sandbox_output = sp.check_output(["wallace", "sandbox"], cwd=demo_path)
 
         m = re.search("Running as experiment (.*)...", sandbox_output)
         self.exp_id = m.group(1)
@@ -21,9 +27,14 @@ class TestBartlett(object):
 
     def teardown(self):
         """Tear down the app."""
-        subprocess.call(
-            "heroku apps:destroy --app " + self.exp_id + " --confirm " + self.exp_id,
-            shell=True)
+        sp.call([
+            "heroku",
+            "apps:destroy",
+            "--app",
+            self.exp_id,
+            "--confirm",
+            self.exp_id,
+        ])
 
     def test_experiment(self):
         """Run the autobots."""
@@ -65,10 +76,13 @@ class TestBartlett(object):
                         "destination_uuid": agent_uuid
                     }
                     r = requests.get(url + "/transmissions", params=args)
+                    info_uuid = str(r.json()["transmissions"][0]["info_uuid"])
                     assert(r.status_code == 200)
 
                     # Get info associated with the pending transmission.
-                    r = requests.get(url + "/information/" + str(r.json()["transmissions"][0]["info_uuid"]), params=args)
+                    r = requests.get(
+                        url + "/information/" + info_uuid,
+                        params=args)
                     assert(r.status_code == 200)
 
                     # Create a new info.
