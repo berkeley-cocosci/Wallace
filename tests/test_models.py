@@ -323,6 +323,158 @@ class TestModels(object):
         print("Testing models: Network        passed!")
         sys.stdout.flush()
 
+        """####################
+        ###### Test Node ######
+        ####################"""
+
+        print("Testing models: Node", end="\r")
+        sys.stdout.flush()
+
+        empty_tables(self.db)
+
+        # create nodes
+        net = models.Network()
+        self.db.add(net)
+        self.db.commit()
+        net = models.Network.query.one()
+
+        ppt = models.Participant(worker_id="test",
+                                 assignment_id="test",
+                                 hit_id="test",
+                                 mode="test")
+        self.db.add(ppt)
+        self.db.commit()
+        ppt = models.Participant.query.one()
+
+        node1 = models.Node(network=net)
+        node2 = models.Node(network=net, participant=ppt)
+        v = node1.connect(node2)[0]
+        info1 = models.Info(origin=node1)
+        info2 = models.Info(origin=node2)
+        info2.fail()
+        t = node1.transmit()
+
+        # Test attributes
+        assert node1.id == 1
+        assert isinstance(node1.creation_time, datetime)
+        assert node1.property1 is None
+        assert node1.property2 is None
+        assert node1.property3 is None
+        assert node1.property4 is None
+        assert node1.property5 is None
+        assert node1.failed is False
+        assert node1.time_of_death is None
+        assert node1.type == "node"
+        assert node1.network == net
+        assert node1.network_id == 1
+        assert node1.participant is None
+        assert node1.participant_id is None
+        assert node2.participant == ppt
+        assert node2.participant_id == 1
+
+        # test __repr__
+        assert repr(node1) == "Node-1-node"
+
+        # test __json__
+        assert node1.__json__() == {
+            "id": 1,
+            "type": "node",
+            "network_id": 1,
+            "creation_time": node1.creation_time,
+            "time_of_death": None,
+            "failed": False,
+            "participant_id": None,
+            "property1": None,
+            "property2": None,
+            "property3": None,
+            "property4": None,
+            "property5": None
+        }
+
+        # test vectors
+        assert node1.vectors() == [v]
+        assert node1.vectors(direction="outgoing") == [v]
+        assert node1.vectors(direction="incoming") == []
+        assert node1.vectors(failed=True) == []
+        assert node2.vectors() == [v]
+        assert node2.vectors(direction="incoming") == [v]
+        assert node2.vectors(direction="outgoing") == []
+        assert node2.vectors(failed=True) == []
+
+        # test neighbors
+        assert node1.neighbors() == [node2]
+        assert node1.neighbors(type=Agent) == []
+        assert node1.neighbors(direction="from") == []
+        assert node1.neighbors(direction="either") == [node2]
+        assert node1.neighbors(direction="both") == []
+        assert node2.neighbors() == []
+        assert node2.neighbors(type=Agent) == []
+        assert node2.neighbors(direction="from") == [node1]
+        assert node2.neighbors(direction="either") == [node1]
+        assert node2.neighbors(direction="both") == []
+
+        # test is_connected
+        assert node1.is_connected(node2)
+        assert not node2.is_connected(node1)
+        assert not node1.is_connected(node2, direction="from")
+        assert node2.is_connected(node1, direction="from")
+        assert node1.is_connected(node2, direction="either")
+        assert node2.is_connected(node1, direction="either")
+        assert not node1.is_connected(node2, direction="both")
+        assert not node2.is_connected(node1, direction="both")
+
+        assert node1.is_connected([node2, node2]) == [True, True]
+
+        # test infos
+        assert node1.infos() == [info1]
+        assert node2.infos() == []
+        assert node1.infos(type=Gene) == []
+        assert node2.infos(type=Gene) == []
+        assert node1.infos(failed=True) == []
+        assert node2.infos(failed=True) == [info2]
+        assert node1.infos(failed="all") == [info1]
+        assert node2.infos(failed="all") == [info2]
+
+        # test received infos
+        node2.receive()
+        assert node1.received_infos() == []
+        assert node2.received_infos() == [info1]
+        assert node2.received_infos(type=Gene) == []
+
+        # test transmissions
+        assert node1.transmissions() == [t]
+        assert node1.transmissions(direction="incoming") == []
+        assert node1.transmissions(direction="all") == [t]
+        assert node1.transmissions(status="pending") == []
+        assert node1.transmissions(status="received") == [t]
+        assert node2.transmissions() == []
+        assert node2.transmissions(direction="incoming") == [t]
+        assert node2.transmissions(direction="all") == [t]
+        assert node2.transmissions(direction="incoming",
+                                   status="pending") == []
+        assert node2.transmissions(direction="incoming",
+                                   status="received") == [t]
+
+        # test transformations
+        info2.failed = False
+        tf = models.Transformation(info_in=info1, info_out=info2)
+        assert node1.transformations() == []
+        assert node2.transformations() == [tf]
+        assert node2.transformations(type=Mutation) == []
+
+        # test fail
+        node2.fail()
+        assert node2.failed is True
+        assert info2.failed is True
+        assert t.failed is True
+        assert v.failed is True
+        assert tf.failed is True
+        assert node1.failed is False
+
+        print("Testing models: Node           passed!")
+        sys.stdout.flush()
+
+
     ##################################################################
     # Node
     ##################################################################
