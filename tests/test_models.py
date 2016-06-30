@@ -137,6 +137,54 @@ class TestModels(object):
         sys.stdout.flush()
 
         """####################
+        #### Test Question ####
+        ####################"""
+
+        print("Testing models: Question", end="\r")
+        sys.stdout.flush()
+
+        empty_tables(self.db)
+
+        # create a question
+        ppt = models.Participant(worker_id="test",
+                                 assignment_id="test",
+                                 hit_id="test",
+                                 mode="test")
+        self.db.add(ppt)
+        self.db.commit()
+        q = models.Question(
+            participant=ppt,
+            text="blah",
+            response="blah blah",
+            number=1)
+        q = models.Question.query.one()
+
+        # test attributes
+        assert q.id == 1
+        assert isinstance(q.creation_time, datetime)
+        assert q.property1 is None
+        assert q.property2 is None
+        assert q.property3 is None
+        assert q.property4 is None
+        assert q.property5 is None
+        assert q.failed is False
+        assert q.time_of_death is None
+        assert q.type == "question"
+        assert q.participant == ppt
+        assert q.participant_id == ppt.id
+        assert q.number == 1
+        assert q.text == "blah"
+        assert q.response == "blah blah"
+
+        # test fail
+        q.fail()
+        assert q.failed is True
+        assert isinstance(q.time_of_death, datetime)
+
+        print("Testing models: Question       passed!")
+        sys.stdout.flush()
+
+        """####################
         #### Test Network ####
         ####################"""
 
@@ -272,7 +320,7 @@ class TestModels(object):
         assert net.vectors() == []
         assert net.transformations() == []
 
-        print("Testing models: Network    passed!")
+        print("Testing models: Network        passed!")
         sys.stdout.flush()
 
     ##################################################################
