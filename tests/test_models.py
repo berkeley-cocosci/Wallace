@@ -471,6 +471,24 @@ class TestModels(object):
         assert tf.failed is True
         assert node1.failed is False
 
+        # test connect
+        assert len(models.Vector.query.filter_by(
+            origin_id=1,
+            destination_id=2).all()) == 1
+        assert len(models.Vector.query.filter_by(
+            origin_id=2,
+            destination_id=1).all()) == 0
+        assert len(models.Vector.query.all()) == 1
+
+        # test transmit
+        assert len(models.Transmission.query.all()) == 1
+        assert len(models.Transmission.query.filter_by(
+            origin_id=1).all()) == 1
+        assert len(models.Transmission.query.filter_by(
+            origin_id=2).all()) == 0
+        assert len(models.Transmission.query.filter_by(
+            info_id=1).all()) == 1
+
         print("Testing models: Node           passed!")
         sys.stdout.flush()
 
