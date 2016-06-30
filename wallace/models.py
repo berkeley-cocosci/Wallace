@@ -1208,7 +1208,6 @@ class Vector(Base, SharedMixin):
             "id": self.id,
             "origin_id": self.origin_id,
             "destination_id": self.destination_id,
-            "info_id": self.info_id,
             "network_id": self.network_id,
             "creation_time": self.creation_time,
             "failed": self.failed,
