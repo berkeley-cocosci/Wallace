@@ -1200,7 +1200,7 @@ class Vector(Base, SharedMixin):
     def __repr__(self):
         """The string representation of a vector."""
         return "Vector-{}-{}".format(
-            self.origin_id, self.destination_id)
+            self.id, self.type)
 
     def __json__(self):
         """The json representation of a vector."""
