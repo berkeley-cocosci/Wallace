@@ -185,15 +185,15 @@ class Question(Base, SharedMixin):
     participant = relationship(Participant, backref='all_questions')
 
     # the network that this node is a part of
-    question_id = Column(Integer, nullable=False)
+    number = Column(Integer)
 
     # the text of the question
-    question = Column(String(250), nullable=False)
+    text = Column(String(250))
 
     # the response from the participants
     response = Column(String(1000), nullable=False)
 
-    def __init__(self, participant, question, response, question_id):
+    def __init__(self, participant, response, text=None, number=None):
         """Create a question."""
         # check the participant hasn't failed
         if participant.failed:
@@ -202,8 +202,8 @@ class Question(Base, SharedMixin):
 
         self.participant = participant
         self.participant_id = participant.id
-        self.question_id = question_id
-        self.question = question
+        self.number = number
+        self.text = text
         self.response = response
 
     def fail(self):
