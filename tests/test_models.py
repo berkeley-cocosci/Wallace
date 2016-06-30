@@ -25,13 +25,125 @@ class TestModels(object):
 
     def test_models(self):
 
+        def empty_tables(db):
+            db.commit()
+            self.setup()
+
+        """####################
+        ### Test Participant ##
+        ####################"""
+
+        print("")
+        print("Testing models: Participant", end="\r")
+        sys.stdout.flush()
+
+        empty_tables(self.db)
+
+        # create test participant
+        ppt = models.Participant(worker_id="test",
+                                 assignment_id="test",
+                                 hit_id="test",
+                                 mode="test")
+        self.db.add(ppt)
+        self.db.commit()
+        ppt = models.Participant.query.one()
+
+        net = models.Network()
+        self.db.add(net)
+        self.db.commit()
+        net = models.Network.query.one()
+
+        node1 = models.Node(network=net, participant=ppt)
+        node2 = models.Node(network=net)
+
+        info1 = models.Info(origin=node1)
+        info2 = models.Info(origin=node1)
+        info2.fail()
+        q = models.Question(participant=ppt, text="blah", response="blah blah", number=1)
+
+        # test attributes
+        assert ppt.id == 1
+        assert isinstance(ppt.creation_time, datetime)
+        assert ppt.property1 is None
+        assert ppt.property2 is None
+        assert ppt.property3 is None
+        assert ppt.property4 is None
+        assert ppt.property5 is None
+        assert ppt.failed is False
+        assert ppt.time_of_death is None
+        assert ppt.type == "participant"
+        assert ppt.worker_id == "test"
+        assert ppt.assignment_id == "test"
+        assert ppt.hit_id == "test"
+        assert ppt.mode == "test"
+        assert ppt.unique_id == "test:test"
+        assert ppt.end_time is None
+        assert ppt.base_pay is None
+        assert ppt.bonus is None
+        assert ppt.status == "working"
+        ppt.status = "submitted"
+        self.db.commit()
+        assert ppt.status == "submitted"
+
+        # test json
+        assert ppt.__json__() == {
+            "id": 1,
+            "type": "participant",
+            "worker_id": "test",
+            "assignment_id": "test",
+            "unique_id": "test:test",
+            "hit_id": "test",
+            "mode": "test",
+            "end_time": None,
+            "base_pay": None,
+            "bonus": None,
+            "status": "submitted",
+            "creation_time": ppt.creation_time,
+            "failed": False,
+            "time_of_death": None,
+            "property1": None,
+            "property2": None,
+            "property3": None,
+            "property4": None,
+            "property5": None
+        }
+
+        # test nodes
+        assert ppt.nodes() == [node1]
+        assert ppt.nodes(type=Agent) == []
+        assert ppt.nodes(failed=True) == []
+        assert ppt.nodes(failed="all") == [node1]
+
+        # test questions
+        assert ppt.questions() == [q]
+        assert ppt.questions(type=models.Question) == [q]
+
+        # test infos
+        assert ppt.infos() == [info1]
+        assert ppt.infos(type=Gene) == []
+        assert ppt.infos(failed=True) == [info2]
+        assert len(ppt.infos(failed="all")) == 2
+
+        # test fail
+        ppt.fail()
+        assert ppt.failed is True
+        assert node1.failed is True
+        assert node2.failed is False
+        assert info1.failed is True
+        assert info2.failed is True
+        assert q.failed is True
+
+        print("Testing models: Participant    passed!")
+        sys.stdout.flush()
+
         """####################
         #### Test Network ####
         ####################"""
 
-        print("")
         print("Testing models: Network", end="\r")
         sys.stdout.flush()
+
+        empty_tables(self.db)
 
         # create test network:
         net = models.Network()
@@ -64,7 +176,6 @@ class TestModels(object):
         models.Transformation(info_in=gene, info_out=info)
 
         # Test attributes
-
         assert net.id == 1
         assert isinstance(net.creation_time, datetime)
         assert net.property1 is None
