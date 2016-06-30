@@ -492,6 +492,83 @@ class TestModels(object):
         print("Testing models: Node           passed!")
         sys.stdout.flush()
 
+        """####################
+        ##### Test Vector #####
+        ####################"""
+
+        print("Testing models: Vector", end="\r")
+        sys.stdout.flush()
+
+        empty_tables(self.db)
+
+        # create vector
+        net = models.Network()
+        self.db.add(net)
+        self.db.commit()
+        net = models.Network.query.one()
+
+        node1 = models.Node(network=net)
+        node2 = models.Node(network=net)
+        v = node1.connect(node2)[0]
+        v2 = node2.connect(node1)[0]
+        info1 = models.Info(origin=node1)
+        t = node1.transmit()
+
+        # Test attributes
+        assert v.id == 1
+        assert isinstance(v.creation_time, datetime)
+        assert v.property1 is None
+        assert v.property2 is None
+        assert v.property3 is None
+        assert v.property4 is None
+        assert v.property5 is None
+        assert v.failed is False
+        assert v.time_of_death is None
+        assert v.type == "vector"
+        assert v.network == net
+        assert v.network_id == 1
+        assert v.origin_id == 1
+        assert v.origin == node1
+        assert v.destination_id == 2
+        assert v.destination == node2
+        assert v.network_id == 1
+        assert v.network == net
+
+        # test repr
+        assert repr(v) == "Vector-1-vector"
+
+        # test __json__
+        assert v.__json__() == {
+            "id": 1,
+            "origin_id": 1,
+            "destination_id": 2,
+            "network_id": 1,
+            "creation_time": v.creation_time,
+            "failed": False,
+            "time_of_death": None,
+            "property1": None,
+            "property2": None,
+            "property3": None,
+            "property4": None,
+            "property5": None
+        }
+
+        # test transmissions
+        assert v.transmissions() == [t]
+        assert v2.transmissions() == []
+        assert v.transmissions(status="received") == []
+
+        # test fail
+        v.fail()
+        assert v.failed is True
+        assert v2.failed is False
+        assert info1.failed is False
+        assert t.failed is True
+
+        print("Testing models: Vector         passed!")
+        sys.stdout.flush()
+
+
 
     ##################################################################
     # Node
