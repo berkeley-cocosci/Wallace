@@ -1142,6 +1142,13 @@ class Vector(Base, SharedMixin):
 
     __tablename__ = "vector"
 
+    # the vector type -- this allows for inheritance
+    type = Column(String(50))
+    __mapper_args__ = {
+        'polymorphic_on': type,
+        'polymorphic_identity': 'vector'
+    }
+
     # the origin node
     origin_id = Column(Integer, ForeignKey('node.id'), index=True)
     origin = relationship(Node, foreign_keys=[origin_id],
