@@ -1206,6 +1206,7 @@ class Vector(Base, SharedMixin):
         """The json representation of a vector."""
         return {
             "id": self.id,
+            "type": self.type,
             "origin_id": self.origin_id,
             "destination_id": self.destination_id,
             "network_id": self.network_id,

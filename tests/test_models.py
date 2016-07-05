@@ -540,6 +540,7 @@ class TestModels(object):
         # test __json__
         assert v.__json__() == {
             "id": 1,
+            "type": "vector",
             "origin_id": 1,
             "destination_id": 2,
             "network_id": 1,
