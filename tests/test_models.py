@@ -654,6 +654,87 @@ class TestModels(object):
         print("Testing models: Info           passed!")
         sys.stdout.flush()
 
+        """####################
+        ## Test Transmission ##
+        ####################"""
+
+        print("Testing models: Transmission", end="\r")
+        sys.stdout.flush()
+
+        empty_tables(self.db)
+
+        # create info
+        net = models.Network()
+        self.db.add(net)
+        self.db.commit()
+        net = models.Network.query.one()
+
+        node1 = models.Node(network=net)
+        node2 = models.Node(network=net)
+        node1.connect(whom=node2)
+        info1 = models.Info(origin=node1, contents="blah")
+        t = node1.transmit()
+        node2.receive()
+        info2 = models.Info(origin=node2, contents="blah2")
+        tf = models.Transformation(info_in=info1, info_out=info2)
+
+        # Test attributes
+        assert t.id == 1
+        assert isinstance(t.creation_time, datetime)
+        assert t.property1 is None
+        assert t.property2 is None
+        assert t.property3 is None
+        assert t.property4 is None
+        assert t.property5 is None
+        assert t.failed is False
+        assert t.time_of_death is None
+        assert t.type == "transmission"
+        assert t.network == net
+        assert t.network_id == 1
+        assert t.origin_id == 1
+        assert t.origin == node1
+        assert t.destination_id == 2
+        assert t.destination == node2
+        assert t.info == info1
+        assert t.info_id == 1
+        assert isinstance(t.receive_time, datetime)
+        assert t.status == "received"
+
+        # test repr
+        assert repr(t) == "Transmission-1-transmission"
+
+        # test __json__
+        assert t.__json__() == {
+            "id": 1,
+            "type": "transmission",
+            "origin_id": 1,
+            "destination_id": 2,
+            "vector_id": 1,
+            "info_id": 1,
+            "network_id": 1,
+            "creation_time": t.creation_time,
+            "receive_time": t.receive_time,
+            "failed": False,
+            "time_of_death": None,
+            "property1": None,
+            "property2": None,
+            "property3": None,
+            "property4": None,
+            "property5": None,
+            "status": "received"
+        }
+
+        # test fail
+        t.fail()
+        assert not info1.failed
+        assert t.failed
+        assert not tf.failed
+        assert not info2.failed
+
+        print("Testing models: Transmission   passed!")
+        sys.stdout.flush()
+
+
 
     ##################################################################
     # Node
