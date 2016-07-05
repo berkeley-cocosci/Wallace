@@ -569,6 +569,90 @@ class TestModels(object):
         print("Testing models: Vector         passed!")
         sys.stdout.flush()
 
+        """####################
+        ###### Test Info ######
+        ####################"""
+
+        print("Testing models: Info", end="\r")
+        sys.stdout.flush()
+
+        empty_tables(self.db)
+
+        # create info
+        net = models.Network()
+        self.db.add(net)
+        self.db.commit()
+        net = models.Network.query.one()
+
+        node1 = models.Node(network=net)
+        node2 = models.Node(network=net)
+        node1.connect(whom=node2)
+        info1 = models.Info(origin=node1, contents="blah")
+        t = node1.transmit()
+        node2.receive()
+        info2 = models.Info(origin=node2, contents="blah2")
+        tf = models.Transformation(info_in=info1, info_out=info2)
+
+        # Test attributes
+        assert info1.id == 1
+        assert isinstance(info1.creation_time, datetime)
+        assert info1.property1 is None
+        assert info1.property2 is None
+        assert info1.property3 is None
+        assert info1.property4 is None
+        assert info1.property5 is None
+        assert info1.failed is False
+        assert info1.time_of_death is None
+        assert info1.type == "info"
+        assert info1.network == net
+        assert info1.network_id == 1
+        assert info1.origin_id == 1
+        assert info1.origin == node1
+        assert info1.contents == "blah"
+
+        # test repr
+        assert repr(info1) == "Info-1-info"
+
+        # test __json__
+        assert info1.__json__() == {
+            "id": 1,
+            "type": "info",
+            "origin_id": 1,
+            "network_id": 1,
+            "creation_time": info1.creation_time,
+            "failed": False,
+            "time_of_death": None,
+            "property1": None,
+            "property2": None,
+            "property3": None,
+            "property4": None,
+            "property5": None,
+            "contents": "blah"
+        }
+
+        # test transmissions()
+        assert info1.transmissions() == [t]
+        assert info1.transmissions(status="received") == [t]
+        assert info1.transmissions(status="pending") == []
+        assert info2.transmissions() == []
+
+        # test transformations
+        assert info1.transformations() == [tf]
+        assert info2.transformations() == [tf]
+        assert info1.transformations(relationship="parent") == [tf]
+        assert info2.transformations(relationship="parent") == []
+        assert info1.transformations(relationship="child") == []
+        assert info2.transformations(relationship="child") == [tf]
+
+        # test fail
+        info1.fail()
+        assert info1.failed
+        assert t.failed
+        assert tf.failed
+        assert not info2.failed
+
+        print("Testing models: Info           passed!")
+        sys.stdout.flush()
 
 
     ##################################################################
