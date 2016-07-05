@@ -1362,9 +1362,9 @@ class Info(Base, SharedMixin):
         else:
             return Transmission\
                 .query\
-                .filterby(info_id=self.id,
-                          status=status,
-                          failed=False)\
+                .filter_by(info_id=self.id,
+                           status=status,
+                           failed=False)\
                 .all()
 
     def transformations(self, relationship="all"):
