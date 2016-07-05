@@ -1419,6 +1419,13 @@ class Transmission(Base, SharedMixin):
 
     __tablename__ = "transmission"
 
+    # the transmission type -- this allows for inheritance
+    type = Column(String(50))
+    __mapper_args__ = {
+        'polymorphic_on': type,
+        'polymorphic_identity': 'transmission'
+    }
+
     # the vector the transmission passed along
     vector_id = Column(Integer, ForeignKey('vector.id'), index=True)
     vector = relationship(Vector, backref='all_transmissions')
@@ -1483,12 +1490,13 @@ class Transmission(Base, SharedMixin):
 
     def __repr__(self):
         """The string representation of a transmission."""
-        return "Transmission-{}".format(self.id)
+        return "Transmission-{}-{}".format(self.id, self.type)
 
     def __json__(self):
         """The json representation of a transmissions."""
         return {
             "id": self.id,
+            "type": self.type,
             "vector_id": self.vector_id,
             "origin_id": self.origin_id,
             "destination_id": self.destination_id,
