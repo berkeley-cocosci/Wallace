@@ -23,6 +23,9 @@ script:
 - nosetests --with-coverage --cover-package wallace
 - sh scripts/build-demo-docs.sh
 # - nosetests tests._test_heroku --nocapture
+after_script:
+- git config credential.helper "store --file=.git/credentials"
+- echo "https://${GH_TOKEN}:@github.com" > .git/credentials
 after_success:
 - coveralls
 notifications:
