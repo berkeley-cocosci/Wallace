@@ -28,6 +28,8 @@ after_script:
 - echo "https://${GH_TOKEN}:@github.com" > .git/credentials
 after_success:
 - coveralls
+- github_changelog_generator berkeley-cocosci/Wallace --token ${GH_TOKEN}
+- git status
 notifications:
   email:
     recipients:
