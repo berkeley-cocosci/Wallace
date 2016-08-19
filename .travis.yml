@@ -30,7 +30,8 @@ after_script:
 after_success:
 - coveralls
 - github_changelog_generator berkeley-cocosci/Wallace --token ${GH_TOKEN}
-- git status
+- git add .
+- git commit -m "Update the changelog"
 notifications:
   email:
     recipients:
