@@ -8,6 +8,7 @@ install:
 - wget -O- https://toolbelt.heroku.com/install-ubuntu.sh | sh
 - git config --global user.email "alfredrusselwallace@mailinator.com"
 - git config --global user.name "Alfred Russel Wallace"
+- gem install github_changelog_generator
 before_script:
 - psql -c 'create database db;' -U postgres
 env:
