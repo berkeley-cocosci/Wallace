@@ -32,7 +32,7 @@ after_success:
 - github_changelog_generator berkeley-cocosci/Wallace --token ${GH_TOKEN}
 - git add .
 - git commit -m "Update the changelog"
-- git push
+- git push origin $TRAVIS_BRANCH
 notifications:
   email:
     recipients:
