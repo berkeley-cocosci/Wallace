@@ -6,7 +6,7 @@ install:
 - pip install -r requirements.txt
 - python setup.py develop
 - wget -O- https://toolbelt.heroku.com/install-ubuntu.sh | sh
-- git config --global user.email "alfy@mailinator.com"
+- git config --global user.email "alfredrusselwallace@mailinator.com"
 - git config --global user.name "Alfred Russel Wallace"
 before_script:
 - psql -c 'create database db;' -U postgres
@@ -18,6 +18,7 @@ env:
   - secure: rWBAifHvKlQabe6gvz+edMEtjtDnpwI4RFHJB1ytYSNVKQ59s7fIk2q39IZc8K3Uix7ZtP3G7ws6ufQhOj44Pm4j1J+rbLnDjdMtmcDN5aiSnwb05JpltZXCNjUqAu/CBFZ44lnNenZp4uSLhU/kLVhB2Q+UPvyWNFgApEVoiHM=
   - secure: fd4hFOH60UV8laBN4Mjva0w/EmVK3SVC5p/0O1oqPriPhUpoJ3eVVRvITbdvPctEJJgRR9t62rPk+Rv4EOXeRFfsjZK9gOfQqv/9VhJBebdQfOx2dwQLjDiGTrklkokDIDyfpyYOoJzZ/oP+6EneD403ilHnXC4fd/4EDQmaIRI=
   - secure: 3rnkGugv5Hp71gjwQMUj5tup7/xk94p5IXEh0VItSXTziKn0pBY+yrCzAuIzlylbrl0baLaZOFGEFn2K+Jf+tr9mmN23X+zOUNsIqC4swlLLJx6hzH5AZaRmqzGjURM2gLISUayXGT9flOXyOKzzCGFELJKG9KlVyEOJ4fk04wQ=
+  - secure: EFVLbCKjhCwWm3HrdzROqus0cEtCYttzB+7JL4M7G/x50XsusAdAS3wJHVz2FBUdV9uQ4Qfn15rSXib6ucOlrTlsJrEtIOJUdi9pIRgTanYwvqEfr9PIpbpXxyi72BveW+eHnr9PiTwK/9/Z1lssz6UxUM/O+M5J5dDwJtaV0Y0TT2wrzMrR/Q8ZO+0w2RqLHcpOqixZbmcggV3vHt42zuijgubavwP4rhu9X+l4Elg9LggyLesBluaf38Oco95K1CgQKKWMpAq0QnaEzmCwZev1m0+dd7p8q5fPwqEAT2jss9xR+j0j/53knldQPb9nIPpFoZ3OeAuY0CMGZCMjgSqNPF3vHOUGQVVb3BlecWRDdwKPj1bL/AU3dEca43UZhDXVqrdAlJsWFc3Ro9S/xZLvdKBncRmg7qbO+Wd3kg4YoGA5POwofEC+KpyHc/XidJgZ5yzB5IGHqed2sq/80LvlPWCslMJ4kzkxMaNwPf1rRGt5jWdfLpnxeiWGoATJdnm0Uaqgz6plQghHdIe3rbRd+6DY4Zdegx/Cebi4jwoBFqSchBwycG4lYhAvLrXKT4HYY3LMzFc9mlvLK9VdBoFYiFM+iwaQAMkYyb9WuXqcRnY6jUwzrqeMIN2nHWS5vuqMNFwtYYFvakCpgSlmVFnB5HRPh7XFFD2RN49MXfI=
 script:
 - nosetests --with-coverage --cover-package wallace
 - sh scripts/build-demo-docs.sh
