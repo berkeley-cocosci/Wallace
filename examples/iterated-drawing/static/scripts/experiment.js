@@ -29,7 +29,10 @@ get_info = function() {
         method: 'get',
         type: 'json',
         success: function (resp) {
-            story = JSON.parse(resp.info.contents);
+            console.log(resp);
+            console.log(resp.infos);
+            console.log(resp.infos[0].contents);
+            story = JSON.parse(resp.infos[0].contents);
             setTimeout(function () {
                 for (var i = 0; i < story.length; i++) {
                     img = new Image();

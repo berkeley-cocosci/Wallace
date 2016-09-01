@@ -291,6 +291,7 @@ var DrawingCanvas; // variable to store function handle, so we can construct the
       ctx.clearRect(0, 0, canvas.width(), canvas.height());
       if (onRedraw !== undefined && (doRedraw || doRedraw === undefined))
         onRedraw(ctx);
+      self.dirtyImage();
     }
     self.clear(false);
 
@@ -325,7 +326,7 @@ var DrawingCanvas; // variable to store function handle, so we can construct the
     return this;
   };
 
-})(5, 'butt', jQuery, jQuery); // default parameters
+})(1, 'butt', jQuery, jQuery); // default parameters
 
 //From http://skuld.bmsc.washington.edu/~merritt/gnuplot/canvas_demos/
 function getMouseCoordsWithinTarget(event)

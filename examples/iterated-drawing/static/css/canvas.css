@@ -10,7 +10,7 @@ div.table {
   font-size: 16px;
   padding: 0 5px 1px 20px;
   margin-left: 0px;
-  background: url(static/images/delete.png) no-repeat 2px 1px;
+  background: url(../images/delete.png) no-repeat 2px 1px;
   border: 1px solid gray;
   -webkit-border-bottom-right-radius: 10px;
   -moz-border-radius-bottomright: 10px;
@@ -27,7 +27,7 @@ div.table {
   font-size: 16px;
   padding: 0 5px 1px 20px;
   margin-left: 0px;
-  background: url(static/images/undo-gray.png) no-repeat 2px 1px;
+  background: url(../images/undo-gray.png) no-repeat 2px 1px;
   border: 1px solid gray;
   -webkit-border-bottom-right-radius: 10px;
   -moz-border-radius-bottomright: 10px;

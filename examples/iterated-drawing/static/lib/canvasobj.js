@@ -8,21 +8,21 @@
 //  showImageHalf: (optional) either "top","bottom","left","right"
 //
 var canvasobj = function (name,imageobj,imageback,showImageHalf) {
-	
+
 	var width = imageobj.width; //105;
 	var height = imageobj.height; //105;
-	var lineWidth = 4; // Jason used 5	
+	var lineWidth = 1; // Jason used 5
 	var canvas; // canvas object
-	var tableDom; // dom object	
-	
+	var tableDom; // dom object
+
 	// make cell that stores image
 	var makeImgCell = function () {
 		return $('<tr/>').append(
 				 $('<td/>').attr('valign','middle')
 				 		   .attr('align','center')
-				 		   .append(imageobj));				 		 		 
+				 		   .append(imageobj));
 	};
-	
+
 	// make cell that stores canvas
 	var makeCanvasCell = function () {
 		if (imageback === undefined) {
@@ -38,13 +38,13 @@ var canvasobj = function (name,imageobj,imageback,showImageHalf) {
 				 $('<td/>').attr('valign','middle')
 				 		   .attr('align','center')
 				 		   .append(canvas.DOMElement));
-		}			 
+		}
 	};
-	
+
 	// make a table that image/canvas pair
 	(function () {
 		if (imageback !== undefined) {
-			if (showImageHalf === "left" || showImageHalf === "right" || showImageHalf === "bottom" || showImageHalf === "top") 
+			if (showImageHalf === "left" || showImageHalf === "right" || showImageHalf === "bottom" || showImageHalf === "top")
 			{ }
 			else {
 				throw new Error('invalid background image display parameter');
@@ -62,22 +62,22 @@ var canvasobj = function (name,imageobj,imageback,showImageHalf) {
     	getDrawing : function () {
     		return canvas.strokesToString();
     	},
-    	
+
     	// return string with image in data:url format
     	getImage : function () {
     		return canvas.getImage();
     	},
-    	
+
     	// return the name of the input image
     	imageName : function () {
     		return $(imageobj).attr('src');
     	},
-    	
+
     	// return the DOM object associated with the canvas/image pair
     	getDOMelem : function () {
     		return tableDom;
     	},
-    	
+
     	// is the canvas empty?
     	isEmpty : function () {
     		var str_out = canvas.strokesToString();
@@ -86,5 +86,5 @@ var canvasobj = function (name,imageobj,imageback,showImageHalf) {
     		}
     		return false;
     	},
-    }        
+    }
 };
