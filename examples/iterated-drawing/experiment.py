@@ -9,7 +9,7 @@ import os
 import base64
 
 
-class Bartlett1932(Experiment):
+class IteratedDrawing(Experiment):
     """Define the structure of the experiment."""
 
     def __init__(self, session):
@@ -18,7 +18,7 @@ class Bartlett1932(Experiment):
         A few properties are then overwritten.
         Finally, setup() is called.
         """
-        super(Bartlett1932, self).__init__(session)
+        super(IteratedDrawing, self).__init__(session)
         self.experiment_repeats = 1
         self.setup()
 
@@ -31,13 +31,13 @@ class Bartlett1932(Experiment):
         source to each network.
         """
         if not self.networks():
-            super(Bartlett1932, self).setup()
+            super(IteratedDrawing, self).setup()
             for net in self.networks():
-                WarOfTheGhostsSource(network=net)
+                CharacterSource(network=net)
 
     def create_network(self):
         """Return a new network."""
-        return Chain(max_size=3)
+        return Chain(max_size=11)
 
     def add_node_to_network(self, node, network):
         """Add node to the chain and receive transmissions."""
@@ -54,18 +54,15 @@ class Bartlett1932(Experiment):
             self.recruiter().close_recruitment()
 
 
-class WarOfTheGhostsSource(Source):
-    """A Source that reads in a random story from a file and transmits it."""
+class CharacterSource(Source):
+    """Transmit handwritten characters from a local folder."""
 
     __mapper_args__ = {
-        "polymorphic_identity": "war_of_the_ghosts_source"
+        "polymorphic_identity": "character_source"
     }
 
     def _contents(self):
-        """Define the contents of new Infos.
-
-        transmit() -> _what() -> create_information() -> _contents().
-        """
+        """Read in the images."""
         img_root = "static/images/characters"
         filenames = os.listdir(img_root)
         random.shuffle(filenames)
@@ -80,7 +77,6 @@ class WarOfTheGhostsSource(Source):
                     "name": fn,
                     "image": "data:image/png;base64," + encoded,
                     "drawing": "",
-                    # "strokes": ,
                 })
 
         return json.dumps(data)
