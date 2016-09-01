@@ -4,7 +4,7 @@ mode = sandbox
 auto_recruit = true
 
 [HIT Configuration]
-title = Draw a new version of the character
+title = Drawing game
 description = Look at some handwritten characters and create new ones.
 amt_keywords = Psychology, drawing, images
 base_payment = 1.00
