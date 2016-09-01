@@ -62,7 +62,7 @@ submit_response = function() {
     response = [];
     for (var i = 0; i < story.length; i++) {
         response.push({
-            "name": story[i],
+            "name": story[i]["name"],
             "image": canvases[i].getImage(),
             "drawing": cvs.getDrawing(),
         });
