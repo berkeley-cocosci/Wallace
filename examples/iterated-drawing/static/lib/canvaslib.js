@@ -1,4 +1,4 @@
-// 
+//
 // Jason Gross's code for a canvas drawing object
 //
 // Inputs
@@ -12,25 +12,25 @@ var DrawingCanvas; // variable to store function handle, so we can construct the
 
   // set variable to be function handle
   DrawingCanvas = function DrawingCanvas(name, width, height, canvasLineWidth, canvasLineCap, canvas, onRedraw, drawAtPoint, interpolate) {
-    
+
     if (canvasLineWidth === undefined) canvasLineWidth = defaultLineWidth; // set as 5
     if (canvasLineCap === undefined) canvasLineCap = defaultLineCap; // set as 'butt'
-    
+
     var self = this; // save copy of function before doing anything
     this.name = name; // should be the canvas id field
-    
+
     width = parseInt(width); height = parseInt(height);
     if (canvas === undefined)
       canvas = "<canvas>Your browser must support the &lt;canvas&gt; element in order to use this site.</canvas>";
-      
+
     // sets canvas size
     this.canvas = canvas = $(canvas)
       .attr('id', name)
       .attr('width', width)
       .attr('height', height);
-      
-    // Assign functionality to buttons. 
-    // This use of query creates <a></a> tags, but doesn't attach them to the DOM yet 
+
+    // Assign functionality to buttons.
+    // This use of query creates <a></a> tags, but doesn't attach them to the DOM yet
     var clearLink = $('<a/>')
       .attr('id', 'clear')
       .attr('href', '#')
@@ -46,7 +46,7 @@ var DrawingCanvas; // variable to store function handle, so we can construct the
       .attr('href', '#')
       //.append('redo') // commented out by Jason
       .click(function () { self.redo(); return false; });
-      
+
     // This is the entire DOM element for the canvas (the canvas plus the buttons)
     this.DOMElement = $('<div/>')
       .append($('<div/>')
@@ -88,7 +88,7 @@ var DrawingCanvas; // variable to store function handle, so we can construct the
 
       // place ink on the screen, depending on whether or not we are in bounds
       drawStroke = function drawStroke(x, y, force) {
-      	      
+
         if (drawAtPoint === undefined || drawAtPoint(x, y) || force) { // if we are in the bounded box of the canvs
           if (isDrawing) { // continue a stroke
             ctx.lineTo(x, y);
@@ -101,7 +101,7 @@ var DrawingCanvas; // variable to store function handle, so we can construct the
             isDrawing = true;
           }
           lastPt = {'x':x, 'y':y};
-        
+
         } else if (isDrawing) { // if we were drawing, turn off drawing. We are out of bounds!
           isDrawing = false;
           if (lastPt !== undefined && interpolate) {
@@ -122,11 +122,11 @@ var DrawingCanvas; // variable to store function handle, so we can construct the
         lastPt = undefined;
       };
 
-      // clear the canvas 
+      // clear the canvas
       clearDrawing = function clearDrawing(lineWidth, lineCap) {
         if (lineWidth === undefined) lineWidth = canvasLineWidth;
         if (lineCap === undefined) lineCap = canvasLineCap;
-        
+
         ctx.lineWidth = lineWidth;
         ctx.lineCap = lineCap;
 
@@ -161,14 +161,14 @@ var DrawingCanvas; // variable to store function handle, so we can construct the
         link
           .css({
                'color':'gray',
-               'background':'url(images/'+name+'-gray.png) no-repeat 2px 1px' //'background':'url(../images/'+name+'-gray.png) no-repeat 2px 1px'
+               'background':'url(../static/images/'+name+'-gray.png) no-repeat 2px 1px' //'background':'url(../images/'+name+'-gray.png) no-repeat 2px 1px'
                });
       }
       function styleEnableLink(link, name) {
         link
           .css({
                'color':'blue',
-               'background':'url(images/'+name+'.png) no-repeat 2px 1px' //'background':'url(../images/'+name+'.png) no-repeat 2px 1px'
+               'background':'url(../static/images/'+name+'.png) no-repeat 2px 1px' //'background':'url(../images/'+name+'.png) no-repeat 2px 1px'
                });
       }
 
@@ -192,7 +192,7 @@ var DrawingCanvas; // variable to store function handle, so we can construct the
       self.dirty(dirtyDoButtons);
 
       self.canUndo = function canUndo() { return strokes.length > 0; };
-      self.canRedo = function canRedo() { return future_strokes.length > 0; };      
+      self.canRedo = function canRedo() { return future_strokes.length > 0; };
 
       self.undo = function undo() {
         if (!self.canUndo()) throw 'Error: Attempt to undo canvas ' + canvas + ' failed; no state to undo.';
@@ -275,7 +275,7 @@ var DrawingCanvas; // variable to store function handle, so we can construct the
         }
         is_stroking = false;
       };
-    
+
       // define how to handle each mouse event
       canvas
         .mousedown(start) // start stroke
@@ -283,7 +283,7 @@ var DrawingCanvas; // variable to store function handle, so we can construct the
         .mouseup(stop) // end stroke when mouse-up
         .mouseout(stop); // end stroke when you  move off the canvas
     })(ctx, canvasLineWidth, canvasLineCap);
-    
+
     // clear the canvas
     self.clear = function clear(doRedraw) {
       self.clearState();
@@ -348,7 +348,7 @@ function getMouseCoordsWithinTarget(event)
 
 		while (Element.offsetParent)
  		{
- 			CalculatedTotalOffsetLeft += Element.offsetLeft ;     
+ 			CalculatedTotalOffsetLeft += Element.offsetLeft ;
 			CalculatedTotalOffsetTop += Element.offsetTop ;
  			Element = Element.offsetParent ;
  		}

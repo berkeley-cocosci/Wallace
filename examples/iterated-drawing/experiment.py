@@ -4,6 +4,9 @@ from wallace.networks import Chain
 from wallace.nodes import Source
 from wallace.experiments import Experiment
 import random
+import json
+import os
+import base64
 
 
 class Bartlett1932(Experiment):
@@ -63,16 +66,21 @@ class WarOfTheGhostsSource(Source):
 
         transmit() -> _what() -> create_information() -> _contents().
         """
-        stories = [
-            "ghosts.md",
-            "cricket.md",
-            "moochi.md",
-            "outwit.md",
-            "raid.md",
-            "species.md",
-            "tennis.md",
-            "vagabond.md"
-        ]
-        story = random.choice(stories)
-        with open("static/stimuli/{}".format(story), "r") as f:
-            return f.read()
+        img_root = "static/images/characters"
+        filenames = os.listdir(img_root)
+        random.shuffle(filenames)
+        data = []
+        for fn in filenames:
+            if ".png" in fn:
+                # Encode the image in base64.
+                encoded = base64.b64encode(
+                    open(os.path.join(img_root, fn), "rb").read())
+
+                data.append({
+                    "name": fn,
+                    "image": "data:image/png;base64," + encoded,
+                    "drawing": "",
+                    # "strokes": ,
+                })
+
+        return json.dumps(data)

@@ -1,3 +1,5 @@
+var canvases = [];
+
 // Create the agent.
 create_agent = function() {
     reqwest({
@@ -27,12 +29,20 @@ get_info = function() {
         method: 'get',
         type: 'json',
         success: function (resp) {
-            story = resp.infos[0].contents;
-            storyHTML = markdown.toHTML(story);
-            $("#story").html(storyHTML);
-            $("#stimulus").show();
-            $("#response-form").hide();
-            $("#finish-reading").show();
+            story = JSON.parse(resp.info.contents);
+            setTimeout(function () {
+                for (var i = 0; i < story.length; i++) {
+                    img = new Image();
+                    img.src = story[i].image;
+                    cvs = canvasobj("stimulus-" + i, img);
+                    $("#drawing").append(cvs.getDOMelem());
+                    $("#stimulus-" + i + "_canvas").attr("width", "100px");
+                    $("#stimulus-" + i + "_canvas").attr("height", "100px");
+                    canvases.push(cvs);
+                }
+            }, 100);
+            $("#submit-response").removeClass('disabled');
+            $("#submit-response").html('Submit');
         },
         error: function (err) {
             console.log(err);
@@ -42,26 +52,24 @@ get_info = function() {
     });
 };
 
-finish_reading = function() {
-    $("#stimulus").hide();
-    $("#response-form").show();
-    $("#submit-response").removeClass('disabled');
-    $("#submit-response").html('Submit');
-};
-
 submit_response = function() {
     $("#submit-response").addClass('disabled');
     $("#submit-response").html('Sending...');
 
-    response = $("#reproduction").val();
-
-    $("#reproduction").val("");
+    response = [];
+    for (var i = 0; i < story.length; i++) {
+        response.push({
+            "name": story[i],
+            "image": canvases[i].getImage(),
+            "drawing": cvs.getDrawing(),
+        });
+    }
 
     reqwest({
         url: "/info/" + my_node_id,
         method: 'post',
         data: {
-            contents: response,
+            contents: JSON.stringify(response),
             info_type: "Info"
         },
         success: function (resp) {
