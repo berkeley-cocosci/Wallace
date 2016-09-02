@@ -55,28 +55,42 @@ get_info = function() {
     });
 };
 
-submit_response = function() {
-    $("#submit-response").addClass('disabled');
-    $("#submit-response").html('Sending...');
+is_complete = function () {
+    for (var i = 0; i < canvases.length; i++) {
+        if (canvases[i].getDrawing() === "[]") {
+            return false
+        }
+    }
+    return true
+}
 
-    response = [];
-    for (var i = 0; i < story.length; i++) {
-        response.push({
-            "name": story[i]["name"],
-            "image": canvases[i].getImage(),
-            "drawing": cvs.getDrawing(),
+submit_response = function() {
+
+    if (is_complete() === true) {
+
+        $("#submit-response").addClass('disabled');
+        $("#submit-response").html('Sending...');
+
+        response = [];
+        for (var i = 0; i < story.length; i++) {
+            response.push({
+                "name": story[i]["name"],
+                "image": canvases[i].getImage(),
+                "drawing": canvases[i].getDrawing(),
+            });
+        }
+
+        reqwest({
+            url: "/info/" + my_node_id,
+            method: 'post',
+            data: {
+                contents: JSON.stringify(response),
+                info_type: "Info"
+            },
+            success: function (resp) {
+                allow_exit();
+                go_to_page('questionnaire');
+            }
         });
     }
-
-    reqwest({
-        url: "/info/" + my_node_id,
-        method: 'post',
-        data: {
-            contents: JSON.stringify(response),
-            info_type: "Info"
-        },
-        success: function (resp) {
-            create_agent();
-        }
-    });
 };

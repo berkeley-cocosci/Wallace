@@ -19,7 +19,8 @@ class IteratedDrawing(Experiment):
         Finally, setup() is called.
         """
         super(IteratedDrawing, self).__init__(session)
-        self.experiment_repeats = 1
+        self.experiment_repeats = 10
+        self.initial_recruitment = 10
         self.setup()
 
     def setup(self):
