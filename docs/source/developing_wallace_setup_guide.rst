@@ -97,7 +97,7 @@ Set up a virtual environment
 **Note**: if you are using Anaconda, ignore this ``virtualenv``
 section; use ``conda`` to create your virtual environment. Or, see the
 special `Anaconda installation
-instructions <Wallace-with-Anaconda.md>`__.
+instructions <wallace-with-anaconda.md>`__.
 
 Set up a virtual environment by running the following commands:
 
