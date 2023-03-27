@@ -4,5 +4,5 @@ click==6.6
 future==0.15.2
 pexpect==3.3
 psycopg2>=2.5.4
-redis==2.10.3
+redis==4.5.3
 rq==0.5.5
